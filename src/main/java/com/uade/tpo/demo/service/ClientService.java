@@ -1,6 +1,7 @@
 package com.uade.tpo.demo.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ public interface ClientService {
    
     ClientResponse createClient(ClientRequest request);
 
-    ClientResponse getClientByName(String name); 
+   List<ClientResponse> getClientByName(String name); 
 
     ClientResponse getClientByPhone(String phone); 
 

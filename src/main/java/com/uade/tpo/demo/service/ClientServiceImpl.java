@@ -2,6 +2,7 @@ package com.uade.tpo.demo.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,39 +42,55 @@ public ClientResponse createClient(ClientRequest request) {
 }
 
     @Override
-    public ClientResponse getClientByName(String name) {
-        if(!clientRepository.findByName(name).isEmpty())
-        return null;
+    public List<ClientResponse> getClientByName(String name) {
+        return clientRepository.findByName(name).stream().map(ClientMapper::toResponse).toList();// ver que excepcion arrojar si no encuentra clientes con ese nombre
     }
 
     @Override
     public ClientResponse getClientByPhone(String phone) {
         // TODO Auto-generated method stub
-        return null;
+        return clientRepository.findByPhone(phone).stream().map(ClientMapper::toResponse).findFirst().orElseThrow(() -> new RuntimeException("Client with this phone not found"));
     }
 
     @Override
-    public ClientResponse updateClient(Long id, ClientRequest request) {
-        // TODO Auto-generated method stub
-        return null;
+public ClientResponse updateClient(Long id, ClientRequest request) {
+
+    // 1. Buscar cliente por ID
+    Client client = clientRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Client not found"));
+
+    // 2. Actualizar campos
+    client.setName(request.getName());
+    client.setPhone(request.getPhone());
+    client.setNotes(request.getNotes());
+    client.setSource(request.getSource());
+
+    // 3. Guardar cambios
+    Client updatedClient = clientRepository.save(client);
+
+    // 4. Devolver response
+    return ClientMapper.toResponse(updatedClient);
+}
+
+   @Override
+public void deleteClient(Long id) {
+    if (!clientRepository.existsById(id)) {
+        throw new RuntimeException("Client not found");
     }
 
-    @Override
-    public void deleteClient(Long id) {
-        // TODO Auto-generated method stub
-        
-    }
+    clientRepository.deleteById(id);
+}
 
     @Override
     public List<ClientResponse> getAllClients() {
         // TODO Auto-generated method stub
-        return null;
+        return clientRepository.findAll().stream().map(ClientMapper::toResponse).toList();
     }
 
     @Override
     public List<ClientResponse> getActiveClients() {
         // TODO Auto-generated method stub
-        return null;
+        return clientRepository.findByActive(true).stream().map(ClientMapper::toResponse).toList();
     }
     
 }
