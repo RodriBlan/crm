@@ -1,31 +1,27 @@
 package com.uade.tpo.demo.entity;
 
-import java.sql.Date;
 import java.time.LocalDate;
+import java.util.List;
 
-import jakarta.annotation.Generated;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
 public class Client {
-    
-    private String name;
-    private String phone;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String name;
+    private String phone;
+    private String email;           // ← AGREGADO
     private LocalDate registrationDate;
     private boolean isActive;
     private String notes;
     private String source;
-    //@OneToMany(mappedBy = "client")
-    //private List<Sale> sales;
 
-
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
+    private List<Sale> sales;       // ← relación con ventas
 }

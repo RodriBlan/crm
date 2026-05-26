@@ -1,124 +1,111 @@
 package com.uade.tpo.demo.service;
 
-import com.uade.tpo.demo.entity.Category;
-import com.uade.tpo.demo.entity.Product;
-import com.uade.tpo.demo.entity.dto.ProductUpdateRequest;
-
-import com.uade.tpo.demo.exceptions.CategoryInexistentException;
-import com.uade.tpo.demo.exceptions.ProductDuplicateException;
-import com.uade.tpo.demo.exceptions.ProductInexistentException;
-import com.uade.tpo.demo.repository.CategoryRepository;
-import com.uade.tpo.demo.repository.ProductRepository;
-import com.uade.tpo.demo.service.ProductService;
-//import com.uade.tpo.demo.specifications.ProductSpecifications;
-
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.uade.tpo.demo.entity.Category;
+import com.uade.tpo.demo.entity.Product;
+import com.uade.tpo.demo.entity.dto.ProductRequest;
+import com.uade.tpo.demo.entity.dto.ProductResponse;
+import com.uade.tpo.demo.entity.dto.ProductUpdateRequest;
+import com.uade.tpo.demo.exceptions.ProductDuplicateException;
+import com.uade.tpo.demo.exceptions.ProductInexistentException;
+import com.uade.tpo.demo.mapper.ProductMapper;
+import com.uade.tpo.demo.repository.CategoryRepository;
+import com.uade.tpo.demo.repository.ProductRepository;
 
 @Service
 public class ProductServiceImpl implements ProductService {
-    
+
     @Autowired
     private ProductRepository productRepository;
+
     @Autowired
     private CategoryRepository categoryRepository;
 
-   @Override
-public Product createProduct(String description, Double price, Integer stock, List<String> imageUrls, Double descuento, Category category) throws ProductDuplicateException {
-        
-  Page<Product> products = productRepository.findByDescription(description, PageRequest.of(0,1));
-if (products.isEmpty()) {
-    Product newProduct = new Product();
-    newProduct.setDescription(description);
-    newProduct.setPrice(price);
-    newProduct.setStock(stock);
-    newProduct.setImageUrls(imageUrls);
-    newProduct.setDescuento(descuento);
-    newProduct.setCategory(category);
-    return productRepository.save(newProduct);
-}
-throw new ProductDuplicateException();
+    @Autowired
+    private ProductMapper productMapper;
+
+    // ─────────────── CREATE ───────────────
+    @Override
+    public ProductResponse createProduct(ProductRequest request) throws ProductDuplicateException {
+        // Validar duplicado por nombre
+        Page<Product> existing = productRepository.findByDescription(request.getName(), PageRequest.of(0, 1));
+        if (!existing.isEmpty()) {
+            throw new ProductDuplicateException();
+        }
+
+        Product product = productMapper.toEntity(request);
+
+        // Asignar categoría si viene el ID
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getCategoryId()));
+            product.setCategory(category);
+        }
+
+        Product saved = productRepository.save(product);
+        return productMapper.toResponse(saved);
     }
 
-@Override
-public Product updateProduct(Long productId, ProductUpdateRequest request) throws ProductInexistentException {
-    Product product = productRepository.findById(productId)
-            .orElseThrow(ProductInexistentException::new); // lanza 404 si no existe
-
-    // Solo actualizamos los campos que no sean nulos
-    if (request.getDescription() != null) product.setDescription(request.getDescription());
-    if (request.getPrice() != null) product.setPrice(request.getPrice());
-    if (request.getStock() != null) product.setStock(request.getStock());
-    if (request.getImageUrls() != null) product.setImageUrls(request.getImageUrls());
-    if (request.getDescuento() != null) product.setDescuento(request.getDescuento());
-    if (request.getCategory() != null) product.setCategory(request.getCategory());
-
-    return productRepository.save(product);
-}
-
-    
+    // ─────────────── UPDATE ───────────────
     @Override
-    public void deleteProduct(Long productId) {
+    public ProductResponse updateProduct(Long productId, ProductUpdateRequest request) throws ProductInexistentException {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(ProductInexistentException::new);
+
+        productMapper.updateEntity(product, request);
+
+        // Actualizar categoría si viene
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + request.getCategoryId()));
+            product.setCategory(category);
+        }
+
+        Product updated = productRepository.save(product);
+        return productMapper.toResponse(updated);
+    }
+
+    // ─────────────── DELETE ───────────────
+    @Override
+    public void deleteProduct(Long productId) throws ProductInexistentException {
+        if (!productRepository.existsById(productId)) {
+            throw new ProductInexistentException();
+        }
         productRepository.deleteById(productId);
     }
 
+    // ─────────────── GET ALL ───────────────
     @Override
-    public Page<Product> getProducts(PageRequest pageable) {
-        return productRepository.findAll(pageable);
+    public Page<ProductResponse> getProducts(Pageable pageable) {
+        return productRepository.findAll(pageable).map(productMapper::toResponse);
     }
 
-  @Override
-public Page<Product> getProductsByCategory(Long categoryId, Pageable pageable) throws CategoryInexistentException {
-    if (!categoryRepository.existsById(categoryId)) {
-        throw new CategoryInexistentException();
-    }
-    if (pageable == null) {
-        pageable = PageRequest.of(0, Integer.MAX_VALUE);
-    }
-    return productRepository.findByCategoryId(categoryId, pageable);
-}
-
-
-   @Override
-public Page<Product> getProductsByPrice(Double minPrice, Double maxPrice) {
-    return productRepository.findProductByPrice(minPrice, maxPrice, PageRequest.of(0, Integer.MAX_VALUE));
-}
-
-
+    // ─────────────── GET BY DESCRIPTION ───────────────
     @Override
-public Page<Product> getProductByDescription(String description, Pageable pageable) {
-    return productRepository.findByDescription(description, pageable);
-}
-
-
-@Override
-public Optional<Product> getProductById(Long id) {
-    return productRepository.findById(id);
-}
-
-
- @Override
-public Page<Product> getProductByDiscount() {
-    Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE); // para traer todos
-    return productRepository.findProductsWithDiscount(pageable);
-}
-
-    
+    public Page<ProductResponse> getProductByDescription(String description, Pageable pageable) {
+        return productRepository.findByDescription(description, pageable).map(productMapper::toResponse);
     }
 
+    // ─────────────── GET BY CATEGORY ───────────────
+    @Override
+    public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
+        return productRepository.findByCategoryId(categoryId, pageable).map(productMapper::toResponse);
+    }
 
+    // ─────────────── GET BY PRICE RANGE ───────────────
+    @Override
+    public Page<ProductResponse> getProductsByPrice(Double minPrice, Double maxPrice, Pageable pageable) {
+        return productRepository.findByPriceBetween(minPrice, maxPrice, pageable).map(productMapper::toResponse);
+    }
 
-
-   
- 
-
+    // ─────────────── GET WITH DISCOUNT ───────────────
+    @Override
+    public Page<ProductResponse> getProductByDiscount(Pageable pageable) {
+        return productRepository.findByDiscount(pageable).map(productMapper::toResponse);
+    }
+}
