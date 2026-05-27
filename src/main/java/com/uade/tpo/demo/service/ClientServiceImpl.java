@@ -23,11 +23,9 @@ public class ClientServiceImpl implements ClientService {
         if (clientRepository.existsByPhone(request.getPhone())) {
             throw new RuntimeException("Ya existe un cliente con ese teléfono");
         }
-
         Client client = ClientMapper.toEntity(request);
         client.setRegistrationDate(LocalDate.now());
         client.setActive(true);
-
         return ClientMapper.toResponse(clientRepository.save(client));
     }
 
@@ -50,13 +48,19 @@ public class ClientServiceImpl implements ClientService {
     public ClientResponse updateClient(Long id, ClientRequest request) {
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
-
         client.setName(request.getName());
         client.setPhone(request.getPhone());
-        client.setEmail(request.getEmail());        // ← AGREGADO
+        client.setEmail(request.getEmail());
         client.setNotes(request.getNotes());
         client.setSource(request.getSource());
+        return ClientMapper.toResponse(clientRepository.save(client));
+    }
 
+    @Override
+    public ClientResponse updateStatus(Long id, boolean active) {
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
+        client.setActive(active);
         return ClientMapper.toResponse(clientRepository.save(client));
     }
 

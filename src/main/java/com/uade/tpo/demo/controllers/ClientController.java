@@ -2,6 +2,7 @@ package com.uade.tpo.demo.controllers;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.uade.tpo.demo.entity.dto.ClientRequest;
@@ -21,43 +22,54 @@ public class ClientController {
 
     // POST /clients
     @PostMapping
-    public ClientResponse createClient(@RequestBody ClientRequest request) {
-        return clientService.createClient(request);
+    public ResponseEntity<ClientResponse> createClient(@RequestBody ClientRequest request) {
+        return ResponseEntity.ok(clientService.createClient(request));
     }
 
     // GET /clients
     @GetMapping
-    public List<ClientResponse> getAllClients() {
-        return clientService.getAllClients();
+    public ResponseEntity<List<ClientResponse>> getAllClients() {
+        return ResponseEntity.ok(clientService.getAllClients());
     }
 
     // GET /clients/active
     @GetMapping("/active")
-    public List<ClientResponse> getActiveClients() {
-        return clientService.getActiveClients();
+    public ResponseEntity<List<ClientResponse>> getActiveClients() {
+        return ResponseEntity.ok(clientService.getActiveClients());
     }
 
     // GET /clients/name/{name}
     @GetMapping("/name/{name}")
-    public List<ClientResponse> getClientByName(@PathVariable String name) {
-        return clientService.getClientByName(name);
+    public ResponseEntity<List<ClientResponse>> getClientByName(@PathVariable String name) {
+        return ResponseEntity.ok(clientService.getClientByName(name));
     }
 
     // GET /clients/phone/{phone}
     @GetMapping("/phone/{phone}")
-    public ClientResponse getClientByPhone(@PathVariable String phone) {
-        return clientService.getClientByPhone(phone);
+    public ResponseEntity<ClientResponse> getClientByPhone(@PathVariable String phone) {
+        return ResponseEntity.ok(clientService.getClientByPhone(phone));
     }
 
     // PUT /clients/{id}
     @PutMapping("/{id}")
-    public ClientResponse updateClient(@PathVariable Long id, @RequestBody ClientRequest request) {
-        return clientService.updateClient(id, request);
+    public ResponseEntity<ClientResponse> updateClient(
+            @PathVariable Long id,
+            @RequestBody ClientRequest request) {
+        return ResponseEntity.ok(clientService.updateClient(id, request));
+    }
+
+    // PATCH /clients/{id}/status?active=false  ← NUEVO
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ClientResponse> updateStatus(
+            @PathVariable Long id,
+            @RequestParam boolean active) {
+        return ResponseEntity.ok(clientService.updateStatus(id, active));
     }
 
     // DELETE /clients/{id}
     @DeleteMapping("/{id}")
-    public void deleteClient(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
         clientService.deleteClient(id);
+        return ResponseEntity.noContent().build();
     }
 }
