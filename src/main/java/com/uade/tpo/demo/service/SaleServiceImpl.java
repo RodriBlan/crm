@@ -38,54 +38,60 @@ public class SaleServiceImpl implements SaleService {
 
     // ─────────────── CREATE ───────────────
     @Override
-    @Transactional
-    public SaleResponse createSale(SaleRequest request) {
+@Transactional
+public SaleResponse createSale(SaleRequest request) {
 
-        // 1. Buscar cliente
-        Client client = clientRepository.findById(request.getClientId())
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + request.getClientId()));
+    Client client = clientRepository.findById(request.getClientId())
+            .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + request.getClientId()));
 
-        // 2. Construir venta
-        Sale sale = new Sale();
-        sale.setClient(client);
-        sale.setDate(LocalDateTime.now());
-        sale.setStatus(SaleStatus.COMPLETED);
-        sale.setNotes(request.getNotes());
+    Sale sale = new Sale();
+    sale.setClient(client);
+    sale.setDate(LocalDateTime.now());
+    sale.setNotes(request.getNotes());
 
-        // 3. Construir items y calcular total
-        List<SaleItem> items = new ArrayList<>();
-        double total = 0.0;
+    // ← Status dinámico, por defecto COMPLETED
+    SaleStatus saleStatus = SaleStatus.COMPLETED;
+    if (request.getStatus() != null && !request.getStatus().isBlank()) {
+        try {
+            saleStatus = SaleStatus.valueOf(request.getStatus().toUpperCase());
+        } catch (IllegalArgumentException ignored) {}
+    }
+    sale.setStatus(saleStatus);
 
-        for (SaleItemRequest itemReq : request.getItems()) {
-            Product product = productRepository.findById(itemReq.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + itemReq.getProductId()));
+    List<SaleItem> items = new ArrayList<>();
+    double total = 0.0;
 
-            // Validar stock
-            if (product.getStock() < itemReq.getQuantity()) {
-                throw new RuntimeException("Stock insuficiente para el producto: " + product.getName());
-            }
+    for (SaleItemRequest itemReq : request.getItems()) {
+        Product product = productRepository.findById(itemReq.getProductId())
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + itemReq.getProductId()));
 
-            // Descontar stock
-            product.setStock(product.getStock() - itemReq.getQuantity());
-            productRepository.save(product);
-
-            // Crear item
-            SaleItem item = new SaleItem();
-            item.setProduct(product);
-            item.setQuantity(itemReq.getQuantity());
-            item.setUnitPrice(product.getPrice());  // snapshot del precio actual
-            item.setSale(sale);
-
-            items.add(item);
-            total += item.getQuantity() * item.getUnitPrice();
+        if (product.getStock() < itemReq.getQuantity()) {
+            throw new RuntimeException("Stock insuficiente para el producto: " + product.getName()
+                    + ". Disponible: " + product.getStock() + ", solicitado: " + itemReq.getQuantity());
         }
 
-        sale.setItems(items);
-        sale.setTotal(total);
+        // Solo descontar stock si la venta es COMPLETED
+        if (saleStatus == SaleStatus.COMPLETED) {
+            product.setStock(product.getStock() - itemReq.getQuantity());
+            productRepository.save(product);
+        }
 
-        Sale saved = saleRepository.save(sale);
-        return saleMapper.toResponse(saved);
+        SaleItem item = new SaleItem();
+        item.setProduct(product);
+        item.setQuantity(itemReq.getQuantity());
+        item.setUnitPrice(product.getPrice());
+        item.setSale(sale);
+
+        items.add(item);
+        total += item.getQuantity() * item.getUnitPrice();
     }
+
+    sale.setItems(items);
+    sale.setTotal(total);
+
+    Sale saved = saleRepository.save(sale);
+    return saleMapper.toResponse(saved);
+}
 
     // ─────────────── DELETE ───────────────
     @Override
@@ -132,29 +138,44 @@ public class SaleServiceImpl implements SaleService {
 
     // ─────────────── UPDATE STATUS ───────────────
     @Override
-    @Transactional
-    public SaleResponse updateSaleStatus(Long saleId, String status) {
-        Sale sale = saleRepository.findById(saleId)
-                .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + saleId));
+@Transactional
+public SaleResponse updateSaleStatus(Long saleId, String status) {
+    Sale sale = saleRepository.findById(saleId)
+            .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + saleId));
 
-        SaleStatus newStatus;
-        try {
-            newStatus = SaleStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Estado inválido: " + status + ". Valores válidos: PENDING, COMPLETED, CANCELLED");
-        }
-
-        // Si se cancela una venta completada, devolver stock
-        if (newStatus == SaleStatus.CANCELLED && sale.getStatus() == SaleStatus.COMPLETED) {
-            for (SaleItem item : sale.getItems()) {
-                Product product = item.getProduct();
-                product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
-            }
-        }
-
-        sale.setStatus(newStatus);
-        Sale updated = saleRepository.save(sale);
-        return saleMapper.toResponse(updated);
+    SaleStatus newStatus;
+    try {
+        newStatus = SaleStatus.valueOf(status.toUpperCase());
+    } catch (IllegalArgumentException e) {
+        throw new RuntimeException("Estado inválido: " + status);
     }
+
+    SaleStatus oldStatus = sale.getStatus();
+
+    // PENDING → COMPLETED: descontar stock
+    if (oldStatus == SaleStatus.PENDING && newStatus == SaleStatus.COMPLETED) {
+        for (SaleItem item : sale.getItems()) {
+            Product product = item.getProduct();
+            if (product.getStock() < item.getQuantity()) {
+                throw new RuntimeException("Stock insuficiente para completar la venta. Producto: "
+                        + product.getName() + ". Disponible: " + product.getStock());
+            }
+            product.setStock(product.getStock() - item.getQuantity());
+            productRepository.save(product);
+        }
+    }
+
+    // COMPLETED → CANCELLED: devolver stock
+    if (oldStatus == SaleStatus.COMPLETED && newStatus == SaleStatus.CANCELLED) {
+        for (SaleItem item : sale.getItems()) {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+        }
+    }
+
+    sale.setStatus(newStatus);
+    Sale updated = saleRepository.save(sale);
+    return saleMapper.toResponse(updated);
+}
 }

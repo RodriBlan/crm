@@ -1,21 +1,13 @@
 package com.uade.tpo.demo.service;
 
-//import java.util.ArrayList;
-//import java.util.List;
-import java.util.Optional;
+import com.uade.tpo.demo.entity.dto.CategoryRequest;
+import com.uade.tpo.demo.entity.dto.CategoryResponse;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import com.uade.tpo.demo.entity.Category;
-import com.uade.tpo.demo.exceptions.CategoryDuplicateException;
+import java.util.List;
 
 public interface CategoryService {
-
-    public Page<Category> getCategories(Pageable pageRequest);
-
-    public Optional<Category> getCategoryById(Long categoryId);
-
-    public Category createCategory(String description) throws CategoryDuplicateException;
+    CategoryResponse createCategory(CategoryRequest request);
+    List<CategoryResponse> getAllCategories();
+    CategoryResponse updateCategory(Long id, CategoryRequest request);
+    void deleteCategory(Long id);
 }

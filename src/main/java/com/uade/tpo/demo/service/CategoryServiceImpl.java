@@ -1,43 +1,57 @@
 package com.uade.tpo.demo.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.uade.tpo.demo.entity.Category;
-import com.uade.tpo.demo.exceptions.CategoryDuplicateException;
+import com.uade.tpo.demo.entity.dto.CategoryRequest;
+import com.uade.tpo.demo.entity.dto.CategoryResponse;
 import com.uade.tpo.demo.repository.CategoryRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
 
-    
-   public Page<Category> getCategories(Pageable pageable) {
-    return categoryRepository.findAll(pageable);
-}
-
-    public Optional<Category> getCategoryById(Long categoryId) {
-        return categoryRepository.findById(categoryId);
+    @Override
+    public CategoryResponse createCategory(CategoryRequest request) {
+        if (categoryRepository.existsByDescription(request.getDescription())) {
+            throw new RuntimeException("Ya existe una categoría con ese nombre.");
+        }
+        Category category = new Category();
+        category.setDescription(request.getDescription());
+        return toResponse(categoryRepository.save(category));
     }
 
-    //@Transactional(rollbackFor = Throwable.class)
-    public Category createCategory(String description) throws CategoryDuplicateException {
-        List<Category> categories = categoryRepository.findByDescription(description);
-        if(categories.isEmpty())
-        return categoryRepository.save(new Category(description));
-        
-            throw new CategoryDuplicateException();
+    @Override
+    public List<CategoryResponse> getAllCategories() {
+        return categoryRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + id));
+        category.setDescription(request.getDescription());
+        return toResponse(categoryRepository.save(category));
+    }
+
+    @Override
+    public void deleteCategory(Long id) {
+        if (!categoryRepository.existsById(id)) {
+            throw new RuntimeException("Categoría no encontrada con ID: " + id);
+        }
+        categoryRepository.deleteById(id);
+    }
+
+    private CategoryResponse toResponse(Category category) {
+        CategoryResponse r = new CategoryResponse();
+        r.setId(category.getId());
+        r.setDescription(category.getDescription());
+        return r;
     }
 }
