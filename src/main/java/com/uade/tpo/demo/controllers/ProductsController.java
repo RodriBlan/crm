@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import com.uade.tpo.demo.entity.dto.ProductRequest;
 import com.uade.tpo.demo.entity.dto.ProductResponse;
@@ -49,7 +50,7 @@ public class ProductsController {
 
     // POST /products
     @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest request)
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody @Valid ProductRequest request)
             throws ProductDuplicateException {
         ProductResponse created = productService.createProduct(request);
         return ResponseEntity.created(URI.create("/products/" + created.getId())).body(created);
@@ -59,7 +60,7 @@ public class ProductsController {
     @PatchMapping("/{productId}")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long productId,
-            @RequestBody ProductUpdateRequest request) throws ProductInexistentException {
+            @RequestBody @Valid ProductUpdateRequest request) throws ProductInexistentException {
         return ResponseEntity.ok(productService.updateProduct(productId, request));
     }
 

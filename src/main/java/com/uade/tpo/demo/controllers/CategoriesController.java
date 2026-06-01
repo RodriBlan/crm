@@ -6,6 +6,7 @@ import com.uade.tpo.demo.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.net.URI;
 import java.util.List;
@@ -26,7 +27,7 @@ public class CategoriesController {
 
     // POST /categories
     @PostMapping
-    public ResponseEntity<CategoryResponse> createCategory(@RequestBody CategoryRequest request) {
+    public ResponseEntity<CategoryResponse> createCategory(@RequestBody @Valid CategoryRequest request) {
         CategoryResponse created = categoryService.createCategory(request);
         return ResponseEntity.created(URI.create("/categories/" + created.getId())).body(created);
     }
@@ -35,7 +36,7 @@ public class CategoriesController {
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> updateCategory(
             @PathVariable Long id,
-            @RequestBody CategoryRequest request) {
+            @RequestBody @Valid CategoryRequest request) {
         return ResponseEntity.ok(categoryService.updateCategory(id, request));
     }
 

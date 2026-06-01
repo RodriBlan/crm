@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import com.uade.tpo.demo.entity.dto.SaleRequest;
 import com.uade.tpo.demo.entity.dto.SaleResponse;
@@ -21,7 +22,7 @@ public class SaleController {
 
     // POST /sales
     @PostMapping
-    public ResponseEntity<SaleResponse> createSale(@RequestBody SaleRequest request) {
+    public ResponseEntity<SaleResponse> createSale(@RequestBody @Valid SaleRequest request) {
         SaleResponse created = saleService.createSale(request);
         return ResponseEntity.created(URI.create("/sales/" + created.getId())).body(created);
     }

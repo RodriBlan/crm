@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import com.uade.tpo.demo.entity.dto.ClientRequest;
 import com.uade.tpo.demo.entity.dto.ClientResponse;
@@ -22,7 +23,7 @@ public class ClientController {
 
     // POST /clients
     @PostMapping
-    public ResponseEntity<ClientResponse> createClient(@RequestBody ClientRequest request) {
+    public ResponseEntity<ClientResponse> createClient(@RequestBody @Valid ClientRequest request) {
         return ResponseEntity.ok(clientService.createClient(request));
     }
 
@@ -54,7 +55,7 @@ public class ClientController {
     @PutMapping("/{id}")
     public ResponseEntity<ClientResponse> updateClient(
             @PathVariable Long id,
-            @RequestBody ClientRequest request) {
+            @RequestBody @Valid ClientRequest request) {
         return ResponseEntity.ok(clientService.updateClient(id, request));
     }
 
