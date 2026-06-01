@@ -1,202 +1,171 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../utils/apiFetch";
 import Layout from "../components/Layout";
+import { S, Avatar, SkeletonRows, ErrorBanner, fmtMoney, fmtNum } from "../components/ui";
+import { NewSaleModal } from "./Sales";
 
-
-function StatCard({ icon, label, value, sub, subColor = "text-green-600" }) {
+function KpiCard({ icon, label, value, sub, chipLabel, chipBg, chipColor }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
-        <span className="material-symbols-outlined text-[22px] text-[#0058be]">{icon}</span>
+    <div style={{ ...S.card, padding: "18px 20px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+        <span style={{ fontSize: "11px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
+        <span style={{ padding: "3px 10px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: chipBg, color: chipColor }}>{chipLabel}</span>
       </div>
-      <div className="text-4xl font-bold text-gray-900 font-mono mt-1">{value}</div>
-      {sub && <div className={`text-sm font-medium ${subColor} flex items-center gap-1`}>{sub}</div>}
+      {/* Valor en formato distendido — fuente normal, no monospace */}
+      <div style={{ fontSize: "28px", fontWeight: "600", color: "#1B3A6B", letterSpacing: "-0.01em" }}>{value}</div>
+      {sub && (
+        <div style={{ fontSize: "12px", color: "#6B89B8", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+          <i className="ti ti-trending-up" style={{ fontSize: "13px", color: "#0F6E56" }} aria-hidden="true" />
+          {sub}
+        </div>
+      )}
     </div>
   );
-}
-
-function getInitials(name = "") {
-  return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
 }
 
 export default function Dashboard({ currentPage, onNavigate }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [showSaleModal, setShowSaleModal] = useState(false);
+
   async function fetchStats() {
     setLoading(true); setError(null);
     try {
       const res = await apiFetch("/stats");
-      if (!res.ok) throw new Error("No se pudieron cargar las estadísticas.");
+      if (!res?.ok) throw new Error("No se pudieron cargar las estadísticas.");
       setStats(await res.json());
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   }
 
   useEffect(() => { fetchStats(); }, []);
 
-  function fmt(n) {
+  // Formato distendido para dinero — sin decimales, con separador
+  function fmtMoneyRelaxed(n) {
     if (n == null) return "—";
-    return Number(n).toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  }
-
-  function fmtMoney(n) {
-    if (n == null) return "—";
-    return "$" + Number(n).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (n >= 1000000) return "$" + (n / 1000000).toFixed(1).replace(".", ",") + "M";
+    if (n >= 1000) return "$" + Math.round(n / 1000) + "k";
+    return "$" + Math.round(n).toLocaleString("es-AR");
   }
 
   return (
-    <>
     <Layout
       currentPage={currentPage}
       onNavigate={onNavigate}
-      searchPlaceholder="Buscar en el CRM..."
+      showSearch={false}  /* ← sin barra de búsqueda en dashboard */
       headerRight={
-       <button
-    onClick={() => onNavigate("sales")}
-    className="flex items-center gap-2 bg-[#0058be] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-  >
-    <span className="material-symbols-outlined text-[18px]">add</span>
-    Nueva Venta
-  </button>
-}
-    >
-      <div className="space-y-6">
-        {/* Page header */}
+        <button style={S.btnPrimary} onClick={() => setShowSaleModal(true)}>
+          <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nueva Venta
+        </button>
+      }>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Overview</h1>
-          <p className="text-sm text-gray-500 mt-1">Tus métricas clave y top performers.</p>
+          <h1 style={{ fontSize: "20px", fontWeight: "600", color: "#1B3A6B", margin: 0 }}>Overview</h1>
+          <p style={{ fontSize: "13px", color: "#6B89B8", marginTop: "4px" }}>Métricas clave y top performers</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>
-            {error}
-            <button onClick={fetchStats} className="ml-auto underline">Reintentar</button>
-          </div>
-        )}
+        {error && <ErrorBanner message={error} onRetry={fetchStats} />}
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard
-            icon="shopping_bag"
-            label="Total Ventas"
-            value={loading ? "—" : fmt(stats?.totalSales)}
+        {/* KPIs */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
+          <KpiCard
+            label="Total ventas"
+            value={loading ? "—" : fmtNum(stats?.totalSales)}
+            sub={stats ? `${fmtNum(stats.salesThisMonth)} este mes` : null}
+            chipLabel="ventas" chipBg="#DCE8F8" chipColor="#1B3A6B"
           />
-          <StatCard
-            icon="account_balance_wallet"
-            label="Ingresos Este Mes"
-            value={loading ? "—" : fmtMoney(stats?.revenueThisMonth)}
-            sub={stats ? `${fmt(stats.salesThisMonth)} ventas este mes` : null}
+          <KpiCard
+            label="Ingresos este mes"
+            value={loading ? "—" : fmtMoneyRelaxed(stats?.revenueThisMonth)}
+            chipLabel="mensual" chipBg="#E1F5EE" chipColor="#0F6E56"
           />
-          <StatCard
-            icon="monetization_on"
-            label="Ingresos Totales"
-            value={loading ? "—" : fmtMoney(stats?.totalRevenue)}
+          <KpiCard
+            label="Ingresos totales"
+            value={loading ? "—" : fmtMoneyRelaxed(stats?.totalRevenue)}
+            chipLabel="total" chipBg="#FAEEDA" chipColor="#854F0B"
           />
         </div>
 
         {/* Tables */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {/* Top Products */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="font-semibold text-gray-900">Top 5 Productos más vendidos</h2>
-              <button onClick={() => onNavigate("products")} className="text-sm text-[#0058be] hover:underline">Ver todos</button>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          {/* Top productos */}
+          <div style={S.card}>
+            <div style={{ padding: "14px 18px", borderBottom: "0.5px solid rgba(27,58,107,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "#1B3A6B" }}>Top productos</span>
+              <button onClick={() => onNavigate("products")} style={{ background: "none", border: "none", fontSize: "12px", color: "#378ADD", cursor: "pointer" }}>Ver todos →</button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Producto</th>
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">Cant.</th>
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">Ingresos</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={i} className="animate-pulse">
-                        <td className="px-5 py-3"><div className="h-4 bg-gray-200 rounded w-40" /></td>
-                        <td className="px-5 py-3"><div className="h-4 bg-gray-200 rounded w-12 ml-auto" /></td>
-                        <td className="px-5 py-3"><div className="h-4 bg-gray-200 rounded w-20 ml-auto" /></td>
-                      </tr>
-                    ))
-                  ) : !stats?.topProducts?.length ? (
-                    <tr><td colSpan={3} className="px-5 py-8 text-center text-gray-400 text-sm">Sin datos aún</td></tr>
-                  ) : (
-                    stats.topProducts.map((p, i) => (
-                      <tr key={p.productId} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">{i + 1}</span>
-                            <span className="text-sm font-semibold text-gray-800">{p.productName}</span>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr>
+                <th style={S.th}>Producto</th>
+                <th style={{ ...S.th, textAlign: "right" }}>Cant.</th>
+                <th style={{ ...S.th, textAlign: "right" }}>Ingresos</th>
+              </tr></thead>
+              <tbody>
+                {loading ? <SkeletonRows cols={3} rows={5} /> :
+                  !stats?.topProducts?.length
+                    ? <tr><td colSpan={3} style={{ ...S.td, textAlign: "center", color: "#6B89B8", padding: "30px" }}>Sin datos aún</td></tr>
+                    : stats.topProducts.map((p, i) => (
+                      <tr key={p.productId}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                        <td style={S.td}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#DCE8F8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", fontWeight: "600", color: "#1B3A6B", flexShrink: 0 }}>{i + 1}</span>
+                            <span style={{ fontSize: "13px", fontWeight: "500" }}>{p.productName}</span>
                           </div>
                         </td>
-                        <td className="px-5 py-3 text-right font-mono text-sm text-gray-500">{fmt(p.totalQuantitySold)}</td>
-                        <td className="px-5 py-3 text-right font-mono text-sm text-gray-800">{fmtMoney(p.totalRevenue)}</td>
+                        <td style={{ ...S.td, textAlign: "right", fontSize: "13px", color: "#6B89B8" }}>{fmtNum(p.totalQuantitySold)}</td>
+                        <td style={{ ...S.td, textAlign: "right", fontSize: "13px", fontWeight: "500" }}>{fmtMoneyRelaxed(p.totalRevenue)}</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ))}
+              </tbody>
+            </table>
           </div>
 
-          {/* Top Clients */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="font-semibold text-gray-900">Top 5 Clientes por compras</h2>
-              <button onClick={() => onNavigate("clients")} className="text-sm text-[#0058be] hover:underline">Ver todos</button>
+          {/* Top clientes */}
+          <div style={S.card}>
+            <div style={{ padding: "14px 18px", borderBottom: "0.5px solid rgba(27,58,107,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "13px", fontWeight: "600", color: "#1B3A6B" }}>Top clientes</span>
+              <button onClick={() => onNavigate("clients")} style={{ background: "none", border: "none", fontSize: "12px", color: "#378ADD", cursor: "pointer" }}>Ver todos →</button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">Cliente</th>
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">Compras</th>
-                    <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={i} className="animate-pulse">
-                        <td className="px-5 py-3"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-gray-200" /><div className="h-4 bg-gray-200 rounded w-32" /></div></td>
-                        <td className="px-5 py-3"><div className="h-4 bg-gray-200 rounded w-12 ml-auto" /></td>
-                        <td className="px-5 py-3"><div className="h-4 bg-gray-200 rounded w-20 ml-auto" /></td>
-                      </tr>
-                    ))
-                  ) : !stats?.topClients?.length ? (
-                    <tr><td colSpan={3} className="px-5 py-8 text-center text-gray-400 text-sm">Sin datos aún</td></tr>
-                  ) : (
-                    stats.topClients.map((c) => (
-                      <tr key={c.clientId} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-[#131b2e] text-white flex items-center justify-center text-xs font-bold shrink-0">
-                              {getInitials(c.clientName)}
-                            </div>
-                            <span className="text-sm font-semibold text-gray-800">{c.clientName}</span>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr>
+                <th style={S.th}>Cliente</th>
+                <th style={{ ...S.th, textAlign: "right" }}>Compras</th>
+                <th style={{ ...S.th, textAlign: "right" }}>Total</th>
+              </tr></thead>
+              <tbody>
+                {loading ? <SkeletonRows cols={3} rows={5} /> :
+                  !stats?.topClients?.length
+                    ? <tr><td colSpan={3} style={{ ...S.td, textAlign: "center", color: "#6B89B8", padding: "30px" }}>Sin datos aún</td></tr>
+                    : stats.topClients.map((c) => (
+                      <tr key={c.clientId}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                        <td style={S.td}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <Avatar name={c.clientName} size={24} fontSize={9} />
+                            <span style={{ fontSize: "13px", fontWeight: "500" }}>{c.clientName}</span>
                           </div>
                         </td>
-                        <td className="px-5 py-3 text-right font-mono text-sm text-gray-500">{fmt(c.totalPurchases)}</td>
-                        <td className="px-5 py-3 text-right font-mono text-sm text-gray-800">{fmtMoney(c.totalSpent)}</td>
+                        <td style={{ ...S.td, textAlign: "right", fontSize: "13px", color: "#6B89B8" }}>{fmtNum(c.totalPurchases)}</td>
+                        <td style={{ ...S.td, textAlign: "right", fontSize: "13px", fontWeight: "500" }}>{fmtMoneyRelaxed(c.totalSpent)}</td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
+
+      {showSaleModal && (
+        <NewSaleModal
+          onClose={() => setShowSaleModal(false)}
+          onSave={() => { setShowSaleModal(false); fetchStats(); }}
+        />
+      )}
     </Layout>
-  </>
-);
+  );
 }

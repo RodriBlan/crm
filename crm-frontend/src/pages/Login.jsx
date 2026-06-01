@@ -7,106 +7,63 @@ export default function Login() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  function handleChange(e) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.username || !form.password) {
-      setError("Completá usuario y contraseña.");
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      await login(form.username, form.password);
-      // useAuth actualiza el estado, App.jsx redirige automáticamente
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    if (!form.username || !form.password) { setError("Completá usuario y contraseña."); return; }
+    setLoading(true); setError(null);
+    try { await login(form.username, form.password); }
+    catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   }
 
   return (
-    <>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-        rel="stylesheet"
-      />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet"
-      />
+    <div style={{ minHeight: "100vh", background: "#F0F4FA", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', system-ui, sans-serif" }}>
+      {/* Decoración de fondo */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: "50vh", background: "#1B3A6B", zIndex: 0 }} />
 
-      <div className="min-h-screen bg-[#f8f9ff] flex items-center justify-center font-[Inter,sans-serif]">
-        <div className="w-full max-w-sm">
-          {/* Logo */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-14 h-14 rounded-full bg-[#131b2e] text-white flex items-center justify-center text-2xl font-bold mb-4">
-              A
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-            <p className="text-sm text-gray-500 mt-1">Ingresá para continuar</p>
-          </div>
+      <div style={{ width: "100%", maxWidth: "380px", padding: "0 24px", position: "relative", zIndex: 1 }}>
+        {/* Logo */}
+        <div style={{ textAlign: "center", marginBottom: "28px" }}>
+          <div style={{ width: "44px", height: "44px", background: "rgba(255,255,255,0.15)", borderRadius: "12px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "600", color: "#fff", marginBottom: "14px" }}>N</div>
+          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#fff", margin: 0 }}>Nexus CRM</h1>
+          <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", marginTop: "6px" }}>Ingresá para continuar</p>
+        </div>
 
-          {/* Card */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[16px]">error</span>
-                  {error}
+        {/* Card */}
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "28px", boxShadow: "0 8px 40px rgba(27,58,107,0.15)" }}>
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {error && (
+              <div style={{ background: "#FCEBEB", border: "0.5px solid rgba(163,45,45,0.2)", borderRadius: "8px", padding: "10px 14px", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#A32D2D" }}>
+                <i className="ti ti-alert-circle" style={{ fontSize: "15px", flexShrink: 0 }} aria-hidden="true" />
+                {error}
+              </div>
+            )}
+
+            {[
+              { label: "Usuario", name: "username", type: "text", placeholder: "admin", icon: "ti-user" },
+              { label: "Contraseña", name: "password", type: "password", placeholder: "••••••••", icon: "ti-lock" },
+            ].map((f) => (
+              <div key={f.name} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "11px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>{f.label}</label>
+                <div style={{ position: "relative" }}>
+                  <i className={`ti ${f.icon}`} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "15px", color: "#6B89B8" }} aria-hidden="true" />
+                  <input type={f.type} name={f.name} value={form[f.name]} onChange={(e) => setForm((p) => ({ ...p, [f.name]: e.target.value }))}
+                    placeholder={f.placeholder} autoComplete={f.name}
+                    style={{ width: "100%", paddingLeft: "38px", paddingRight: "12px", paddingTop: "10px", paddingBottom: "10px", border: "0.5px solid rgba(27,58,107,0.15)", borderRadius: "8px", fontSize: "13px", color: "#1B3A6B", outline: "none", boxSizing: "border-box" }} />
                 </div>
-              )}
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Usuario
-                </label>
-                <input
-                  type="text"
-                  name="username"
-                  value={form.username}
-                  onChange={handleChange}
-                  placeholder="admin"
-                  autoComplete="username"
-                  className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                />
               </div>
+            ))}
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-2 w-full bg-[#0058be] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-              >
-                {loading && (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                )}
-                Ingresar
-              </button>
-            </form>
-          </div>
+            <button type="submit" disabled={loading}
+              style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: "20px", padding: "11px", fontSize: "13px", fontWeight: "500", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "4px" }}>
+              {loading && <span style={{ width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />}
+              Ingresar
+            </button>
+          </form>
         </div>
       </div>
-    </>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } } input::placeholder { color: #B5CDE8; }`}</style>
+    </div>
   );
 }

@@ -1,143 +1,118 @@
 import { useState, useEffect } from "react";
-import { apiFetch } from "../utils/apiFetch";
-import { useAuth } from "../hooks/useAuth";
+import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
-
-function getInitials(name = "") {
-  return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
-}
+import { S, Avatar, getInitials, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
 
 function ClientModal({ client, onClose, onSave }) {
-  const [form, setForm] = useState({
-    name: client?.name ?? "",
-    phone: client?.phone ?? "",
-    email: client?.email ?? "",
-    source: client?.source ?? "",
-    notes: client?.notes ?? "",
-  });
+  const [form, setForm] = useState({ name: client?.name ?? "", phone: client?.phone ?? "", email: client?.email ?? "", source: client?.source ?? "", notes: client?.notes ?? "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  function handleChange(e) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  }
 
   async function handleSubmit() {
     if (!form.name || !form.phone) { setError("Nombre y teléfono son obligatorios."); return; }
     setLoading(true); setError(null);
     try {
       const method = client ? "PUT" : "POST";
-      const path = client ? `/clients/${client.id}` : "/clients";
-      const res = await apiFetch(path, { method, body: JSON.stringify(form) });
-      if (!res.ok) throw new Error("Error al guardar el cliente.");
+      const res = await apiFetch(client ? `/clients/${client.id}` : "/clients", { method, body: JSON.stringify(form) });
+      if (!res?.ok) { setError(await readErrorMessage(res)); return; }
       onSave(await res.json(), !!client);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Error al guardar."); }
+    finally { setLoading(false); }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-lg text-gray-900">{client ? "Editar Cliente" : "Nuevo Cliente"}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">{error}</div>}
-
-        <div className="flex flex-col gap-3">
-          {[
-            { label: "Nombre *", name: "name", type: "text", placeholder: "Juan Pérez" },
-            { label: "Teléfono *", name: "phone", type: "text", placeholder: "1134567890" },
-            { label: "Email", name: "email", type: "email", placeholder: "juan@email.com" },
-            { label: "Fuente", name: "source", type: "text", placeholder: "Instagram, Referido..." },
-          ].map((f) => (
-            <div key={f.name} className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{f.label}</label>
-              <input type={f.type} name={f.name} value={form[f.name]} onChange={handleChange} placeholder={f.placeholder}
-                className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all" />
-            </div>
-          ))}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Observaciones / Notas</label>
-            <textarea name="notes" value={form.notes} onChange={handleChange}
-              placeholder="Ej: cliente VIP, prefiere contacto por WhatsApp..." rows={3}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all resize-none" />
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Cancelar</button>
-          <button onClick={handleSubmit} disabled={loading}
-            className="px-4 py-2 rounded-lg bg-[#0058be] text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center gap-2">
-            {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-            {client ? "Guardar Cambios" : "Crear Cliente"}
-          </button>
-        </div>
+    <Modal title={client ? "Editar Cliente" : "Nuevo Cliente"} onClose={onClose}
+      footer={<>
+        <button style={S.btnSecondary} onClick={onClose}>Cancelar</button>
+        <button style={S.btnPrimary} onClick={handleSubmit} disabled={loading}>
+          {loading && <span style={{ width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />}
+          {client ? "Guardar" : "Crear Cliente"}
+        </button>
+      </>}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        {error && <div style={{ background: "#FCEBEB", border: "0.5px solid rgba(163,45,45,0.2)", borderRadius: "8px", padding: "10px 14px", fontSize: "12px", color: "#A32D2D" }}>{error}</div>}
+        {[
+          { label: "Nombre *", name: "name", type: "text", placeholder: "Juan Pérez" },
+          { label: "Teléfono *", name: "phone", type: "text", placeholder: "1134567890" },
+          { label: "Email", name: "email", type: "email", placeholder: "juan@email.com" },
+          { label: "Fuente", name: "source", type: "text", placeholder: "Instagram, Referido..." },
+        ].map((f) => (
+          <FormField key={f.name} label={f.label}>
+            <input type={f.type} value={form[f.name]} onChange={(e) => setForm((p) => ({ ...p, [f.name]: e.target.value }))} placeholder={f.placeholder} style={S.input} />
+          </FormField>
+        ))}
+        <FormField label="Observaciones">
+          <textarea value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
+            placeholder="Ej: cliente VIP, prefiere WhatsApp..." rows={3} style={{ ...S.input, resize: "none" }} />
+        </FormField>
       </div>
-    </div>
+    </Modal>
   );
 }
 
-function ClientDetailPanel({ client, onClose }) {
+function DetailPanel({ client, onClose, onEdit }) {
   if (!client) return null;
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white w-full max-w-sm h-full shadow-2xl flex flex-col overflow-y-auto z-10">
-        <div className="bg-[#131b2e] text-white p-6 flex items-start justify-between shrink-0">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-[#0058be] flex items-center justify-center text-xl font-bold">
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", justifyContent: "flex-end" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(27,58,107,0.3)", backdropFilter: "blur(3px)" }} onClick={onClose} />
+      <div style={{ position: "relative", background: "#fff", width: "320px", height: "100%", boxShadow: "-4px 0 30px rgba(27,58,107,0.12)", display: "flex", flexDirection: "column", zIndex: 10 }}>
+        <div style={{ background: "#1B3A6B", padding: "22px 20px", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
+            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "6px", cursor: "pointer", color: "rgba(255,255,255,0.7)", padding: "4px 8px", display: "flex" }}>
+              <i className="ti ti-x" style={{ fontSize: "16px" }} aria-hidden="true" />
+            </button>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: "600", color: "#fff", flexShrink: 0 }}>
               {getInitials(client.name)}
             </div>
             <div>
-              <h2 className="font-bold text-lg leading-tight">{client.name}</h2>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold mt-1 ${client.active ? "bg-green-500/20 text-green-300 border border-green-500/30" : "bg-gray-500/20 text-gray-300 border border-gray-500/30"}`}>
+              <div style={{ fontSize: "15px", fontWeight: "500", color: "#fff" }}>{client.name}</div>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "2px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", marginTop: "4px", background: client.active ? "rgba(29,158,117,0.2)" : "rgba(255,255,255,0.1)", color: client.active ? "#4edea3" : "rgba(255,255,255,0.5)" }}>
+                <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: client.active ? "#4edea3" : "rgba(255,255,255,0.4)", display: "inline-block" }} />
                 {client.active ? "Activo" : "Inactivo"}
               </span>
             </div>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors mt-1">
-            <span className="material-symbols-outlined">close</span>
-          </button>
         </div>
-        <div className="p-6 flex flex-col gap-5 flex-1">
-          <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Datos de contacto</h3>
-            <div className="flex flex-col gap-3">
+
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+            <div>
+              <div style={{ fontSize: "10px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Contacto</div>
               {[
-                { icon: "phone", label: "Teléfono", value: client.phone },
-                { icon: "email", label: "Email", value: client.email },
-                { icon: "person_add", label: "Fuente", value: client.source },
-                { icon: "calendar_today", label: "Registrado", value: client.registrationDate },
+                { icon: "ti-phone", label: "Teléfono", value: client.phone },
+                { icon: "ti-mail", label: "Email", value: client.email },
+                { icon: "ti-user-plus", label: "Fuente", value: client.source },
+                { icon: "ti-calendar", label: "Registrado", value: client.registrationDate },
               ].map((item) => (
-                <div key={item.label} className="flex items-start gap-3">
-                  <span className="material-symbols-outlined text-[18px] text-gray-400 mt-0.5">{item.icon}</span>
+                <div key={item.label} style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "8px 0", borderBottom: "0.5px solid rgba(27,58,107,0.06)" }}>
+                  <i className={`ti ${item.icon}`} style={{ fontSize: "15px", color: "#6B89B8", marginTop: "1px", flexShrink: 0 }} aria-hidden="true" />
                   <div>
-                    <p className="text-xs text-gray-400">{item.label}</p>
-                    <p className="text-sm font-medium text-gray-800">{item.value ?? "—"}</p>
+                    <div style={{ fontSize: "10px", color: "#6B89B8", marginBottom: "2px" }}>{item.label}</div>
+                    <div style={{ fontSize: "13px", color: "#1B3A6B", fontWeight: "500" }}>{item.value ?? "—"}</div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-          <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Observaciones / Notas</h3>
-            {client.notes ? (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{client.notes}</p>
-              </div>
-            ) : (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-                <span className="material-symbols-outlined text-gray-300 text-[32px]">notes</span>
-                <p className="text-sm text-gray-400 mt-1">Sin observaciones</p>
-              </div>
-            )}
+
+            <div>
+              <div style={{ fontSize: "10px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Observaciones</div>
+              {client.notes ? (
+                <div style={{ background: "#FAEEDA", border: "0.5px solid rgba(239,159,39,0.3)", borderRadius: "8px", padding: "12px 14px" }}>
+                  <p style={{ fontSize: "13px", color: "#1B3A6B", lineHeight: "1.6", margin: 0, whiteSpace: "pre-wrap" }}>{client.notes}</p>
+                </div>
+              ) : (
+                <div style={{ background: "#F0F4FA", borderRadius: "8px", padding: "20px", textAlign: "center" }}>
+                  <i className="ti ti-notes" style={{ fontSize: "26px", color: "#B5CDE8", display: "block", marginBottom: "6px" }} aria-hidden="true" />
+                  <span style={{ fontSize: "12px", color: "#6B89B8" }}>Sin observaciones</span>
+                </div>
+              )}
+            </div>
+
+            <button style={{ ...S.btnPrimary, justifyContent: "center" }} onClick={() => onEdit(client)}>
+              <i className="ti ti-edit" style={{ fontSize: "14px" }} aria-hidden="true" /> Editar cliente
+            </button>
           </div>
         </div>
       </div>
@@ -154,20 +129,19 @@ export default function Clients({ currentPage, onNavigate }) {
   const [modal, setModal] = useState(null);
   const [detail, setDetail] = useState(null);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 8;
+  const PAGE_SIZE = 9;
 
   async function fetchClients() {
     setLoading(true); setError(null);
     try {
       const res = await apiFetch("/clients");
-      if (!res.ok) throw new Error("No se pudo conectar con el servidor.");
+      if (!res?.ok) throw new Error("Error al cargar clientes.");
       setClients(await res.json());
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   }
 
   useEffect(() => { fetchClients(); }, []);
-
   useEffect(() => {
     const q = search.toLowerCase();
     setFiltered(q ? clients.filter((c) => c.name?.toLowerCase().includes(q)) : clients);
@@ -176,6 +150,7 @@ export default function Clients({ currentPage, onNavigate }) {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const activeCount = clients.filter((c) => c.active).length;
 
   function handleSave(saved, isEdit) {
     setClients((prev) => isEdit ? prev.map((c) => c.id === saved.id ? saved : c) : [...prev, saved]);
@@ -186,8 +161,7 @@ export default function Clients({ currentPage, onNavigate }) {
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar este cliente?")) return;
     try {
-      const res = await apiFetch(`/clients/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Error al eliminar.");
+      await apiFetch(`/clients/${id}`, { method: "DELETE" });
       setClients((prev) => prev.filter((c) => c.id !== id));
       if (detail?.id === id) setDetail(null);
     } catch (err) { alert(err.message); }
@@ -196,151 +170,120 @@ export default function Clients({ currentPage, onNavigate }) {
   async function handleToggleStatus(id, active) {
     try {
       const res = await apiFetch(`/clients/${id}/status?active=${active}`, { method: "PATCH" });
-      if (!res.ok) throw new Error("Error al cambiar estado.");
+      if (!res?.ok) return;
       const updated = await res.json();
       setClients((prev) => prev.map((c) => c.id === id ? updated : c));
       if (detail?.id === id) setDetail(updated);
     } catch (err) { alert(err.message); }
   }
 
-  const activeCount = clients.filter((c) => c.active).length;
+  const kpis = [
+    { label: "Total", value: clients.length, icon: "ti-users", bg: "#DCE8F8", color: "#1B3A6B" },
+    { label: "Activos", value: activeCount, icon: "ti-user-check", bg: "#E1F5EE", color: "#0F6E56" },
+    { label: "Inactivos", value: clients.length - activeCount, icon: "ti-user-off", bg: "#F0F4FA", color: "#6B89B8" },
+    { label: "% Activos", value: clients.length ? Math.round((activeCount / clients.length) * 100) + "%" : "—", icon: "ti-chart-pie", bg: "#FAEEDA", color: "#854F0B" },
+  ];
 
   return (
-    <Layout
-      currentPage={currentPage}
-      onNavigate={onNavigate}
-      searchPlaceholder="Buscar cliente por nombre..."
-      searchValue={search}
-      onSearch={setSearch}
+    <Layout currentPage={currentPage} onNavigate={onNavigate}
+      searchPlaceholder="Buscar cliente..." searchValue={search} onSearch={setSearch}
       headerRight={
-        <button onClick={() => setModal("create")}
-          className="flex items-center gap-2 bg-[#0058be] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          Crear Nuevo
+        <button style={S.btnPrimary} onClick={() => setModal("create")}>
+          <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nuevo Cliente
         </button>
-      }
-    >
-      <div className="space-y-6">
-        {/* KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Clientes</span>
-            <span className="text-4xl font-bold text-gray-900 mt-2">{loading ? "—" : clients.length}</span>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Clientes Activos</span>
-            <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-4xl font-bold text-gray-900">{loading ? "—" : activeCount}</span>
-              {!loading && clients.length > 0 && (
-                <span className="text-sm text-green-600 font-medium">{Math.round((activeCount / clients.length) * 100)}%</span>
-              )}
-            </div>
-          </div>
-          <div className="md:col-span-2 flex items-end justify-end pb-1">
-            <button className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors shadow-sm">
-              <span className="material-symbols-outlined text-[16px]">filter_list</span> Filtrar
-            </button>
-          </div>
+      }>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div>
+          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", margin: 0 }}>Clientes</h1>
+          <p style={{ fontSize: "13px", color: "#6B89B8", marginTop: "4px" }}>Gestioná tu base de clientes</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>{error}
-            <button onClick={fetchClients} className="ml-auto underline">Reintentar</button>
-          </div>
-        )}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+          {kpis.map((k) => (
+            <div key={k.label} style={{ ...S.card, padding: "14px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: "34px", height: "34px", borderRadius: "10px", background: k.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <i className={`ti ${k.icon}`} style={{ fontSize: "16px", color: k.color }} aria-hidden="true" />
+              </div>
+              <div>
+                <div style={{ fontSize: "10px", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "500" }}>{k.label}</div>
+                <div style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", marginTop: "2px" }}>{loading ? "—" : k.value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
 
-        {/* Table */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-gray-50 border-b border-gray-200">
+        {error && <ErrorBanner message={error} onRetry={fetchClients} />}
+
+        <div style={S.card}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
                 <tr>
-                  {["Nombre", "Teléfono", "Email", "Fuente", "Notas", "Estado", "Acciones"].map((h) => (
-                    <th key={h} className={`py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "Acciones" ? "text-right" : ""}`}>{h}</th>
+                  {["Cliente", "Teléfono", "Email", "Fuente", "Notas", "Estado", ""].map((h, i) => (
+                    <th key={i} style={{ ...S.th, textAlign: h === "" ? "right" : "left" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td className="py-3 px-4"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-gray-200" /><div className="h-4 bg-gray-200 rounded w-32" /></div></td>
-                      {Array.from({ length: 5 }).map((_, j) => <td key={j} className="py-3 px-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>)}
-                      <td className="py-3 px-4" />
-                    </tr>
-                  ))
-                ) : paginated.length === 0 ? (
-                  <tr><td colSpan={7} className="py-12 text-center text-gray-400 text-sm">{search ? "No se encontraron clientes." : "No hay clientes aún."}</td></tr>
-                ) : (
-                  paginated.map((client) => (
-                    <tr key={client.id} className="hover:bg-gray-50 transition-colors group cursor-pointer" onClick={() => setDetail(client)}>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-500 shrink-0">{getInitials(client.name)}</div>
-                          <span className="font-semibold text-sm text-gray-900">{client.name}</span>
+              <tbody>
+                {loading ? <SkeletonRows cols={7} rows={6} /> :
+                  paginated.length === 0 ? (
+                    <tr><td colSpan={7} style={{ ...S.td, textAlign: "center", color: "#6B89B8", padding: "40px" }}>
+                      {search ? "Sin resultados." : "No hay clientes aún."}
+                    </td></tr>
+                  ) : paginated.map((client) => (
+                    <tr key={client.id} style={{ cursor: "pointer" }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                      onClick={() => setDetail(client)}>
+                      <td style={S.td}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
+                          <Avatar name={client.name} size={28} fontSize={10} />
+                          <span style={{ fontSize: "13px", fontWeight: "500", color: "#1B3A6B" }}>{client.name}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 font-mono text-sm text-gray-500">{client.phone ?? "—"}</td>
-                      <td className="py-3 px-4 text-sm text-gray-500">{client.email ?? "—"}</td>
-                      <td className="py-3 px-4 text-sm text-gray-500">{client.source ?? "—"}</td>
-                      <td className="py-3 px-4 max-w-[180px]">
+                      <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px", color: "#6B89B8" }}>{client.phone ?? "—"}</td>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8" }}>{client.email ?? "—"}</td>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8" }}>{client.source ?? "—"}</td>
+                      <td style={{ ...S.td, maxWidth: "160px" }}>
                         {client.notes
-                          ? <span className="text-sm text-gray-500 truncate block" title={client.notes}>{client.notes}</span>
-                          : <span className="text-sm text-gray-300">—</span>}
+                          ? <span style={{ fontSize: "12px", color: "#6B89B8", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={client.notes}>{client.notes}</span>
+                          : <span style={{ fontSize: "12px", color: "#DCE8F8" }}>—</span>}
                       </td>
-                      <td className="py-3 px-4">
-                        {client.active
-                          ? <span className="inline-flex items-center px-2 py-0.5 rounded border border-green-300 bg-green-50 text-green-700 text-xs font-semibold uppercase tracking-wide">Activo</span>
-                          : <span className="inline-flex items-center px-2 py-0.5 rounded border border-gray-300 bg-gray-100 text-gray-500 text-xs font-semibold uppercase tracking-wide">Inactivo</span>}
+                      <td style={S.td}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: client.active ? "#E1F5EE" : "#F0F4FA", color: client.active ? "#0F6E56" : "#6B89B8" }}>
+                          <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: client.active ? "#1D9E75" : "#B5CDE8", display: "inline-block" }} />
+                          {client.active ? "Activo" : "Inactivo"}
+                        </span>
                       </td>
-                      <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => handleToggleStatus(client.id, !client.active)}
-                            className={`transition-colors ${client.active ? "text-gray-400 hover:text-yellow-600" : "text-gray-400 hover:text-green-600"}`}
-                            title={client.active ? "Desactivar" : "Activar"}>
-                            <span className="material-symbols-outlined text-[18px]">{client.active ? "person_off" : "person"}</span>
-                          </button>
-                          <button onClick={() => setModal(client)} className="text-gray-400 hover:text-blue-600 transition-colors" title="Editar">
-                            <span className="material-symbols-outlined text-[18px]">edit</span>
-                          </button>
-                          <button onClick={() => handleDelete(client.id)} className="text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
-                            <span className="material-symbols-outlined text-[18px]">delete</span>
-                          </button>
+                      <td style={{ ...S.td, textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
+                        <div className="row-actions" style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "2px", opacity: 0, transition: "opacity 0.15s" }}>
+                          {[
+                            { icon: client.active ? "ti-user-off" : "ti-user-check", action: () => handleToggleStatus(client.id, !client.active), title: client.active ? "Desactivar" : "Activar" },
+                            { icon: "ti-edit", action: () => setModal(client), title: "Editar" },
+                            { icon: "ti-trash", action: () => handleDelete(client.id), title: "Eliminar" },
+                          ].map((btn) => (
+                            <button key={btn.icon} onClick={btn.action} title={btn.title}
+                              style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "#F0F4FA"; e.currentTarget.style.color = "#1B3A6B"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#6B89B8"; }}>
+                              <i className={`ti ${btn.icon}`} style={{ fontSize: "15px" }} aria-hidden="true" />
+                            </button>
+                          ))}
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
+                  ))}
               </tbody>
             </table>
           </div>
-
-          <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-500">
-              {loading ? "Cargando..." : `Mostrando ${Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–${Math.min(page * PAGE_SIZE, filtered.length)} de ${filtered.length} clientes`}
-            </span>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-40">
-                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-              </button>
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
-                <button key={p} onClick={() => setPage(p)}
-                  className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${p === page ? "bg-[#0058be] text-white" : "text-gray-500 hover:bg-gray-200"}`}>
-                  {p}
-                </button>
-              ))}
-              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-40">
-                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-              </button>
-            </div>
+          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(27,58,107,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: "12px", color: "#6B89B8" }}>{loading ? "Cargando..." : `${filtered.length} clientes`}</span>
+            <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>
       </div>
 
-      {detail && <ClientDetailPanel client={detail} onClose={() => setDetail(null)} />}
+      {detail && <DetailPanel client={detail} onClose={() => setDetail(null)} onEdit={(c) => { setDetail(null); setModal(c); }} />}
       {modal && <ClientModal client={modal === "create" ? null : modal} onClose={() => setModal(null)} onSave={handleSave} />}
     </Layout>
   );

@@ -1,58 +1,71 @@
 import { useAuth } from "../hooks/useAuth";
 
-const NAV_ITEMS = [
-  { icon: "dashboard", label: "Dashboard", page: "dashboard" },
-  { icon: "group", label: "Clients", page: "clients" },
-  { icon: "inventory_2", label: "Products", page: "products" },
-  { icon: "payments", label: "Sales", page: "sales" },
-  { icon: "history", label: "History", page: "history" },
+const NAV = [
+  { icon: "ti-layout-dashboard", label: "Dashboard", page: "dashboard" },
+  { icon: "ti-users",            label: "Clientes",  page: "clients" },
+  { icon: "ti-box",              label: "Productos", page: "products" },
+  { icon: "ti-credit-card",      label: "Ventas",    page: "sales",   section: "Transacciones" },
+  { icon: "ti-clock-hour-4",     label: "Historial", page: "history" },
 ];
 
 export default function Sidebar({ currentPage, onNavigate }) {
   const { user, logout } = useAuth();
 
   return (
-    <nav className="hidden md:flex bg-[#131b2e] text-white fixed left-0 top-0 h-screen w-[260px] flex-col z-50 border-r border-white/5">
-      {/* Header */}
-      <div className="p-6 border-b border-white/10 flex items-center gap-4">
-        <div className="w-10 h-10 rounded-full bg-[#0058be] flex items-center justify-center font-bold text-sm shrink-0">
-          {user?.username?.[0]?.toUpperCase() ?? "A"}
-        </div>
-        <div className="overflow-hidden">
-          <h1 className="font-bold text-base leading-tight truncate">{user?.username ?? "Admin"}</h1>
-          <p className="text-xs text-white/50">{user?.role ?? "ADMIN"}</p>
+    <nav style={{ width: "200px", background: "#1B3A6B", display: "flex", flexDirection: "column", flexShrink: 0, height: "100vh", position: "fixed", left: 0, top: 0, zIndex: 50 }}>
+      {/* Logo */}
+      <div style={{ padding: "18px 16px", borderBottom: "0.5px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "500", color: "#fff", flexShrink: 0 }}>N</div>
+        <div>
+          <div style={{ fontSize: "14px", fontWeight: "500", color: "#fff", lineHeight: 1.2 }}>Nexus CRM</div>
+          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)", marginTop: "2px" }}>Enterprise</div>
         </div>
       </div>
 
-      {/* Nav items */}
-      <div className="flex-1 overflow-y-auto py-3 flex flex-col gap-1">
-        {NAV_ITEMS.map((item) => {
+      {/* Nav */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }}>
+        {NAV.map((item, idx) => {
           const active = currentPage === item.page;
+          const showSection = item.section && NAV[idx - 1]?.section !== item.section;
           return (
-            <button
-              key={item.page}
-              onClick={() => onNavigate(item.page)}
-              className={`flex items-center gap-4 py-3 px-6 text-xs font-semibold uppercase tracking-widest transition-all duration-150 w-full text-left ${
-                active
-                  ? "bg-[#2170e4] text-white border-l-4 border-[#0058be]"
-                  : "text-white/60 hover:bg-white/5 hover:text-white border-l-4 border-transparent"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-              {item.label}
-            </button>
+            <div key={item.page}>
+              {showSection && (
+                <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.35)", padding: "10px 8px 4px", letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: "500" }}>
+                  {item.section}
+                </div>
+              )}
+              <button onClick={() => onNavigate(item.page)} style={{
+                display: "flex", alignItems: "center", gap: "9px",
+                padding: "8px 10px", width: "100%", border: "none",
+                borderRadius: "8px", background: active ? "rgba(255,255,255,0.15)" : "transparent",
+                color: active ? "#fff" : "rgba(255,255,255,0.55)",
+                fontSize: "12px", fontWeight: active ? "500" : "400",
+                cursor: "pointer", transition: "all 0.15s", textAlign: "left",
+              }}
+                onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.55)"; } }}>
+                <i className={`ti ${item.icon}`} style={{ fontSize: "16px" }} aria-hidden="true" />
+                {item.label}
+              </button>
+            </div>
           );
         })}
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-white/10 flex flex-col gap-1">
-        <button
-          onClick={logout}
-          className="flex items-center gap-4 py-2 px-3 text-xs font-semibold uppercase tracking-widest text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-all w-full text-left"
-        >
-          <span className="material-symbols-outlined text-[18px]">logout</span>
-          Cerrar Sesión
+      <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: "500", color: "#fff", flexShrink: 0 }}>
+          {user?.username?.[0]?.toUpperCase() ?? "A"}
+        </div>
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)", fontWeight: "500", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.username ?? "Admin"}</div>
+          <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)" }}>{user?.role ?? "ADMIN"}</div>
+        </div>
+        <button onClick={logout} style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.3)", padding: "4px", display: "flex" }}
+          onMouseEnter={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.7)"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.3)"}
+          title="Cerrar sesión">
+          <i className="ti ti-logout" style={{ fontSize: "15px" }} aria-hidden="true" />
         </button>
       </div>
     </nav>

@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  box-sizing: border-box;
+}
+
+body {
+  background: #F0F4FA;
+  margin: 0;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #B5CDE8; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #6B89B8; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+input::placeholder, textarea::placeholder { color: #6B89B8 !important; }
+input:focus, textarea:focus, select:focus {
+  border-color: #378ADD !important;
+  box-shadow: 0 0 0 3px rgba(55,138,221,0.12) !important;
+  outline: none !important;
+}
+tr:hover .row-actions { opacity: 1 !important; }

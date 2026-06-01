@@ -31,3 +31,21 @@ build/
 
 ### VS Code ###
 .vscode/
+# Secretos — NUNCA al repositorio
+.env
+*.env
+application-prod.properties
+application-local.properties
+
+# Build
+target/
+*.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Node
+node_modules/
+dist/

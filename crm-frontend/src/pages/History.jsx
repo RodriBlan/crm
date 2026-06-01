@@ -1,56 +1,44 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from "../utils/apiFetch";
 import Layout from "../components/Layout";
-
-const STATUS_STYLES = {
-  COMPLETED: "bg-green-50 border-green-300 text-green-700",
-  PENDING: "bg-blue-50 border-blue-300 text-blue-700",
-  CANCELLED: "bg-red-50 border-red-300 text-red-700",
-};
-const STATUS_LABELS = { COMPLETED: "Completada", PENDING: "Pendiente", CANCELLED: "Cancelada" };
-
-function getInitials(name = "") {
-  return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
-}
+import { S, Avatar, getInitials, StatusBadge, SkeletonRows, Pagination, ErrorBanner, fmtMoney } from "../components/ui";
 
 function SaleDetailPanel({ sale, onClose }) {
   if (!sale) return null;
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white w-full max-w-sm h-full shadow-2xl flex flex-col overflow-y-auto z-10">
-        <div className="bg-[#131b2e] text-white p-6 flex items-start justify-between shrink-0">
-          <div>
-            <p className="text-white/50 text-xs font-semibold uppercase tracking-wide">Venta #{sale.id}</p>
-            <p className="text-white/60 text-sm mt-1">{new Date(sale.date).toLocaleDateString("es-AR")}</p>
+    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", justifyContent: "flex-end" }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(27,58,107,0.3)", backdropFilter: "blur(3px)" }} onClick={onClose} />
+      <div style={{ position: "relative", background: "#fff", width: "320px", height: "100%", boxShadow: "-4px 0 30px rgba(27,58,107,0.12)", display: "flex", flexDirection: "column", zIndex: 10 }}>
+        <div style={{ background: "#1B3A6B", padding: "22px 20px", flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
+            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "6px", cursor: "pointer", color: "rgba(255,255,255,0.7)", padding: "4px 8px", display: "flex" }}>
+              <i className="ti ti-x" style={{ fontSize: "16px" }} aria-hidden="true" />
+            </button>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
-            <span className="material-symbols-outlined">close</span>
-          </button>
+          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Orden #{sale.id}</div>
+          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginTop: "4px" }}>{new Date(sale.date).toLocaleDateString("es-AR")}</div>
         </div>
-        <div className="p-6 flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs font-semibold uppercase ${STATUS_STYLES[sale.status] ?? ""}`}>
-              {STATUS_LABELS[sale.status] ?? sale.status}
-            </span>
-            <span className="text-2xl font-bold font-mono text-gray-900">${Number(sale.total).toFixed(2)}</span>
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <StatusBadge status={sale.status} />
+            <span style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", fontFamily: "monospace" }}>{fmtMoney(sale.total)}</span>
           </div>
           {sale.notes && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Notas</p>
-              <p className="text-sm text-gray-700">{sale.notes}</p>
+            <div style={{ background: "#FAEEDA", border: "0.5px solid rgba(239,159,39,0.3)", borderRadius: "8px", padding: "12px 14px" }}>
+              <div style={{ fontSize: "10px", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Notas</div>
+              <p style={{ fontSize: "13px", color: "#1B3A6B", margin: 0 }}>{sale.notes}</p>
             </div>
           )}
           <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Items</h3>
-            <div className="flex flex-col gap-2">
+            <div style={{ fontSize: "10px", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Items</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {sale.items?.map((item) => (
-                <div key={item.id} className="flex justify-between items-center bg-gray-50 rounded-lg px-3 py-2">
+                <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F0F4FA", borderRadius: "8px", padding: "10px 12px" }}>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">{item.productName}</p>
-                    <p className="text-xs text-gray-400">{item.quantity} x ${Number(item.unitPrice).toFixed(2)}</p>
+                    <div style={{ fontSize: "13px", fontWeight: "500", color: "#1B3A6B" }}>{item.productName}</div>
+                    <div style={{ fontSize: "11px", color: "#6B89B8", marginTop: "2px" }}>{item.quantity} × ${Number(item.unitPrice).toFixed(2)}</div>
                   </div>
-                  <span className="text-sm font-mono font-semibold text-gray-800">${Number(item.subtotal).toFixed(2)}</span>
+                  <span style={{ fontSize: "13px", fontFamily: "monospace", fontWeight: "500", color: "#1B3A6B" }}>${Number(item.subtotal).toFixed(2)}</span>
                 </div>
               ))}
             </div>
@@ -72,23 +60,18 @@ export default function History({ currentPage, onNavigate }) {
   const [loadingClients, setLoadingClients] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 8;
+  const PAGE_SIZE = 9;
 
   useEffect(() => {
-    apiFetch("/clients").then((r) => r?.json()).then((d) => {
-      if (Array.isArray(d)) setClients(d);
-    }).catch(() => {}).finally(() => setLoadingClients(false));
+    apiFetch("/clients").then((r) => r?.json()).then((d) => { if (Array.isArray(d)) setClients(d); }).catch(() => {}).finally(() => setLoadingClients(false));
   }, []);
 
   async function loadHistory(client) {
-    setSelectedClient(client);
-    setClientSearch(client.name);
-    setShowDropdown(false);
-    setSales([]); setError(null);
-    setLoading(true); setPage(1);
+    setSelectedClient(client); setClientSearch(client.name); setShowDropdown(false);
+    setSales([]); setError(null); setLoading(true); setPage(1);
     try {
       const res = await apiFetch(`/sales/client/${client.id}`);
-      if (!res.ok) throw new Error("No se pudo cargar el historial.");
+      if (!res?.ok) throw new Error("No se pudo cargar el historial.");
       setSales(await res.json());
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
@@ -100,60 +83,52 @@ export default function History({ currentPage, onNavigate }) {
 
   const totalPages = Math.max(1, Math.ceil(sales.length / PAGE_SIZE));
   const paginated = sales.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
   const lifetimeValue = sales.filter((s) => s.status === "COMPLETED").reduce((acc, s) => acc + (s.total ?? 0), 0);
-  const avgOrder = sales.length > 0 ? lifetimeValue / sales.filter((s) => s.status === "COMPLETED").length : 0;
+  const completed = sales.filter((s) => s.status === "COMPLETED").length;
+  const avgOrder = completed > 0 ? lifetimeValue / completed : 0;
 
   return (
-    <Layout
-      currentPage={currentPage}
-      onNavigate={onNavigate}
+    <Layout currentPage={currentPage} onNavigate={onNavigate}
       searchPlaceholder="Buscar en historial..."
       headerRight={
-        <button onClick={() => onNavigate("sales")}
-          className="flex items-center gap-2 bg-[#0058be] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
-          <span className="material-symbols-outlined text-[18px]">add</span>
-          Nueva Venta
+        <button style={S.btnPrimary} onClick={() => onNavigate("sales")}>
+          <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nueva Venta
         </button>
-      }
-    >
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 pb-5">
+      }>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+        {/* Header + selector */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "16px", borderBottom: "0.5px solid rgba(27,58,107,0.1)", paddingBottom: "18px" }}>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Historial de Compras</h1>
-            <p className="text-sm text-gray-500 mt-1">Revisá el historial de ventas por cliente.</p>
+            <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", margin: 0 }}>Historial de Compras</h1>
+            <p style={{ fontSize: "13px", color: "#6B89B8", marginTop: "4px" }}>Revisá el historial de ventas por cliente</p>
           </div>
 
           {/* Client selector */}
-          <div className="w-full md:w-80 relative">
-            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Seleccionar Cliente</label>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">person_search</span>
-              <input
-                type="text"
-                value={clientSearch}
+          <div style={{ width: "280px", position: "relative" }}>
+            <div style={{ fontSize: "10px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Seleccionar Cliente</div>
+            <div style={{ position: "relative", display: "flex", alignItems: "center", background: "#fff", border: "0.5px solid rgba(27,58,107,0.15)", borderRadius: "8px", padding: "8px 12px", gap: "8px" }}>
+              <i className="ti ti-user-search" style={{ fontSize: "15px", color: "#6B89B8", flexShrink: 0 }} aria-hidden="true" />
+              <input type="text" value={clientSearch}
                 onChange={(e) => { setClientSearch(e.target.value); setShowDropdown(true); setSelectedClient(null); }}
                 onFocus={() => setShowDropdown(true)}
-                placeholder={loadingClients ? "Cargando clientes..." : "Buscar cliente..."}
-                className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all"
-              />
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-[18px]">expand_more</span>
+                placeholder={loadingClients ? "Cargando..." : "Buscar cliente..."}
+                style={{ background: "none", border: "none", outline: "none", fontSize: "13px", color: "#1B3A6B", flex: 1 }} />
+              <i className="ti ti-chevron-down" style={{ fontSize: "14px", color: "#6B89B8", flexShrink: 0 }} aria-hidden="true" />
             </div>
-
             {showDropdown && clientSearch && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-20">
+              <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "#fff", border: "0.5px solid rgba(27,58,107,0.1)", borderRadius: "8px", boxShadow: "0 8px 24px rgba(27,58,107,0.1)", maxHeight: "200px", overflowY: "auto", zIndex: 20 }}>
                 {filteredClients.length === 0 ? (
-                  <p className="px-3 py-2 text-sm text-gray-400">Sin resultados</p>
+                  <p style={{ padding: "12px", fontSize: "13px", color: "#6B89B8" }}>Sin resultados</p>
                 ) : filteredClients.slice(0, 10).map((c) => (
                   <button key={c.id} onClick={() => loadHistory(c)}
-                    className="w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0 flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-full bg-[#131b2e] text-white flex items-center justify-center text-xs font-bold shrink-0">
-                      {getInitials(c.name)}
-                    </div>
+                    style={{ width: "100%", textAlign: "left", padding: "10px 12px", background: "none", border: "none", borderBottom: "0.5px solid rgba(27,58,107,0.06)", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "none"}>
+                    <Avatar name={c.name} size={26} fontSize={9} />
                     <div>
-                      <p className="font-semibold text-gray-800">{c.name}</p>
-                      <p className="text-xs text-gray-400">{c.phone}</p>
+                      <div style={{ fontSize: "13px", fontWeight: "500", color: "#1B3A6B" }}>{c.name}</div>
+                      <div style={{ fontSize: "11px", color: "#6B89B8" }}>{c.phone}</div>
                     </div>
                   </button>
                 ))}
@@ -162,115 +137,86 @@ export default function History({ currentPage, onNavigate }) {
           </div>
         </div>
 
-        {/* KPIs del cliente seleccionado */}
+        {/* KPIs del cliente */}
         {selectedClient && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Valor de vida</p>
-              <p className="text-3xl font-bold text-gray-900 font-mono">${lifetimeValue.toFixed(2)}</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Total Transacciones</p>
-              <p className="text-3xl font-bold text-gray-900">{sales.length}</p>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Ticket Promedio</p>
-              <p className="text-3xl font-bold text-gray-900 font-mono">${isNaN(avgOrder) || !isFinite(avgOrder) ? "0.00" : avgOrder.toFixed(2)}</p>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
+            {[
+              { label: "Valor de vida", value: fmtMoney(lifetimeValue), icon: "ti-coins", bg: "#DCE8F8", color: "#1B3A6B" },
+              { label: "Transacciones", value: sales.length, icon: "ti-receipt", bg: "#E1F5EE", color: "#0F6E56" },
+              { label: "Ticket promedio", value: fmtMoney(avgOrder), icon: "ti-chart-bar", bg: "#FAEEDA", color: "#854F0B" },
+            ].map((k) => (
+              <div key={k.label} style={{ ...S.card, padding: "14px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "34px", height: "34px", borderRadius: "10px", background: k.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <i className={`ti ${k.icon}`} style={{ fontSize: "16px", color: k.color }} aria-hidden="true" />
+                </div>
+                <div>
+                  <div style={{ fontSize: "10px", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "500" }}>{k.label}</div>
+                  <div style={{ fontSize: "18px", fontWeight: "500", color: "#1B3A6B", marginTop: "2px" }}>{k.value}</div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>{error}
+        {error && <ErrorBanner message={error} />}
+
+        {/* Placeholder sin cliente */}
+        {!selectedClient && !loading && (
+          <div style={{ ...S.card, padding: "60px", textAlign: "center" }}>
+            <i className="ti ti-search" style={{ fontSize: "40px", color: "#DCE8F8", display: "block", marginBottom: "12px" }} aria-hidden="true" />
+            <p style={{ fontSize: "14px", color: "#6B89B8", margin: 0 }}>Seleccioná un cliente para ver su historial</p>
           </div>
         )}
 
         {/* Tabla */}
-        {!selectedClient && !loading && (
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-12 text-center">
-            <span className="material-symbols-outlined text-[48px] text-gray-200">manage_search</span>
-            <p className="text-gray-400 mt-3">Seleccioná un cliente para ver su historial</p>
-          </div>
-        )}
-
         {selectedClient && (
-          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
-            <div className="px-5 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-[#131b2e] text-white flex items-center justify-center text-sm font-bold">
-                  {getInitials(selectedClient.name)}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">{selectedClient.name}</h3>
-                  <p className="text-xs text-gray-400">{sales.length} transacciones</p>
-                </div>
+          <div style={S.card}>
+            <div style={{ padding: "14px 16px", borderBottom: "0.5px solid rgba(27,58,107,0.08)", display: "flex", alignItems: "center", gap: "10px" }}>
+              <Avatar name={selectedClient.name} size={30} fontSize={11} />
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: "500", color: "#1B3A6B" }}>{selectedClient.name}</div>
+                <div style={{ fontSize: "11px", color: "#6B89B8" }}>{sales.length} transacciones</div>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse whitespace-nowrap">
-                <thead className="bg-gray-50 border-b border-gray-200">
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", whiteSpace: "nowrap" }}>
+                <thead>
                   <tr>
-                    {["Order ID", "Fecha", "Items", "Total", "Estado", "Acción"].map((h) => (
-                      <th key={h} className={`py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wide ${h === "Total" ? "text-right" : ""} ${h === "Acción" ? "text-right" : ""}`}>{h}</th>
+                    {["Orden ID", "Fecha", "Items", "Total", "Estado", ""].map((h, i) => (
+                      <th key={i} style={{ ...S.th, textAlign: h === "Total" ? "right" : h === "" ? "right" : "left" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {loading ? (
-                    Array.from({ length: 4 }).map((_, i) => (
-                      <tr key={i} className="animate-pulse">
-                        {Array.from({ length: 6 }).map((_, j) => (
-                          <td key={j} className="py-3 px-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : paginated.length === 0 ? (
-                    <tr><td colSpan={6} className="py-12 text-center text-gray-400 text-sm">Este cliente no tiene ventas registradas.</td></tr>
-                  ) : (
-                    paginated.map((sale) => (
-                      <tr key={sale.id} className="hover:bg-gray-50 transition-colors group">
-                        <td className="py-3 px-4 font-mono text-sm text-gray-400">ORD-{sale.id}</td>
-                        <td className="py-3 px-4 text-sm text-gray-600">{new Date(sale.date).toLocaleDateString("es-AR")}</td>
-                        <td className="py-3 px-4 text-sm text-gray-600">{sale.items?.length ?? 0} producto(s)</td>
-                        <td className="py-3 px-4 text-right font-mono text-sm font-semibold text-gray-800">${Number(sale.total).toFixed(2)}</td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded border text-xs font-semibold uppercase tracking-wide ${STATUS_STYLES[sale.status] ?? ""}`}>
-                            {STATUS_LABELS[sale.status] ?? sale.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
+                <tbody>
+                  {loading ? <SkeletonRows cols={6} rows={5} /> :
+                    paginated.length === 0 ? (
+                      <tr><td colSpan={6} style={{ ...S.td, textAlign: "center", color: "#6B89B8", padding: "40px" }}>Sin ventas registradas para este cliente.</td></tr>
+                    ) : paginated.map((sale) => (
+                      <tr key={sale.id}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                        <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px", color: "#6B89B8" }}>ORD-{sale.id}</td>
+                        <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8" }}>{new Date(sale.date).toLocaleDateString("es-AR")}</td>
+                        <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8" }}>{sale.items?.length ?? 0} producto(s)</td>
+                        <td style={{ ...S.td, textAlign: "right", fontFamily: "monospace", fontSize: "13px", fontWeight: "500" }}>{fmtMoney(sale.total)}</td>
+                        <td style={S.td}><StatusBadge status={sale.status} /></td>
+                        <td style={{ ...S.td, textAlign: "right" }}>
                           <button onClick={() => setDetail(sale)}
-                            className="text-[#0058be] text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline">
-                            Ver
+                            style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "#378ADD", opacity: 0, transition: "opacity 0.15s" }}
+                            className="row-actions">
+                            Ver →
                           </button>
                         </td>
                       </tr>
-                    ))
-                  )}
+                    ))}
                 </tbody>
               </table>
             </div>
 
-            <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">{sales.length} transacciones</span>
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                  className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-200 disabled:opacity-40">
-                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-                </button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
-                  <button key={p} onClick={() => setPage(p)}
-                    className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${p === page ? "bg-[#0058be] text-white" : "text-gray-500 hover:bg-gray-200"}`}>
-                    {p}
-                  </button>
-                ))}
-                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                  className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-200 disabled:opacity-40">
-                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-              </div>
+            <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(27,58,107,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "12px", color: "#6B89B8" }}>{sales.length} transacciones</span>
+              <Pagination page={page} totalPages={totalPages} onPage={setPage} />
             </div>
           </div>
         )}

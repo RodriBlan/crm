@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
+import { S, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
 
-// ─── Modal Categorías ────────────────────────────────────────────────────────
 function CategoryManager({ onClose }) {
   const [categories, setCategories] = useState([]);
   const [newName, setNewName] = useState("");
@@ -13,190 +13,109 @@ function CategoryManager({ onClose }) {
     const res = await apiFetch("/categories");
     if (res?.ok) setCategories(await res.json());
   }
-
   useEffect(() => { fetchCategories(); }, []);
 
   async function handleCreate() {
     if (!newName.trim()) { setError("Ingresá un nombre."); return; }
     setLoading(true); setError(null);
     try {
-      const res = await apiFetch("/categories", {
-        method: "POST",
-        body: JSON.stringify({ description: newName.trim() }),
-      });
-      if (!res.ok) { setError(await readErrorMessage(res)); return; }
-      setNewName("");
-      fetchCategories();
-    } catch { setError("Error al crear la categoría."); }
+      const res = await apiFetch("/categories", { method: "POST", body: JSON.stringify({ description: newName.trim() }) });
+      if (!res?.ok) { setError(await readErrorMessage(res)); return; }
+      setNewName(""); fetchCategories();
+    } catch { setError("Error al crear."); }
     finally { setLoading(false); }
   }
 
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar esta categoría?")) return;
-    try {
-      const res = await apiFetch(`/categories/${id}`, { method: "DELETE" });
-      if (!res.ok) { alert(await readErrorMessage(res)); return; }
-      fetchCategories();
-    } catch { alert("Error al eliminar."); }
+    const res = await apiFetch(`/categories/${id}`, { method: "DELETE" });
+    if (res?.ok) fetchCategories();
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-lg text-gray-900">Gestionar Categorías</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">{error}</div>}
-
-        {/* Crear nueva */}
-        <div className="flex gap-2">
-          <input
-            type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
-            placeholder="Nombre de la categoría..."
-            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all"
-          />
-          <button onClick={handleCreate} disabled={loading}
-            className="px-4 py-2 rounded-lg bg-[#0058be] text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center gap-1">
-            {loading
-              ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              : <span className="material-symbols-outlined text-[18px]">add</span>}
+    <Modal title="Gestionar Categorías" onClose={onClose}
+      footer={<button style={S.btnSecondary} onClick={onClose}>Cerrar</button>}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        {error && <div style={{ background: "#FCEBEB", border: "0.5px solid rgba(163,45,45,0.2)", borderRadius: "8px", padding: "10px 14px", fontSize: "12px", color: "#A32D2D" }}>{error}</div>}
+        <div style={{ display: "flex", gap: "8px" }}>
+          <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nueva categoría..."
+            onKeyDown={(e) => e.key === "Enter" && handleCreate()} style={{ ...S.input, flex: 1 }} />
+          <button style={S.btnPrimary} onClick={handleCreate} disabled={loading}>
+            {loading ? <span style={{ width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} /> : <i className="ti ti-plus" style={{ fontSize: "14px" }} />}
             Crear
           </button>
         </div>
-
-        {/* Lista */}
-        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "240px", overflowY: "auto" }}>
           {categories.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-4">No hay categorías aún.</p>
+            <p style={{ fontSize: "13px", color: "#6B89B8", textAlign: "center", padding: "20px 0" }}>No hay categorías aún.</p>
           ) : categories.map((cat) => (
-            <div key={cat.id} className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-              <span className="text-sm font-medium text-gray-800">{cat.description}</span>
-              <button onClick={() => handleDelete(cat.id)} className="text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
-                <span className="material-symbols-outlined text-[18px]">delete</span>
+            <div key={cat.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F0F4FA", border: "0.5px solid rgba(27,58,107,0.08)", borderRadius: "8px", padding: "9px 12px" }}>
+              <span style={{ fontSize: "13px", color: "#1B3A6B", fontWeight: "500" }}>{cat.description}</span>
+              <button onClick={() => handleDelete(cat.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", display: "flex", padding: "2px" }}
+                onMouseEnter={(e) => e.currentTarget.style.color = "#A32D2D"}
+                onMouseLeave={(e) => e.currentTarget.style.color = "#6B89B8"}>
+                <i className="ti ti-trash" style={{ fontSize: "15px" }} aria-hidden="true" />
               </button>
             </div>
           ))}
         </div>
-
-        <div className="flex justify-end pt-2">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Cerrar</button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
-// ─── Modal Producto ──────────────────────────────────────────────────────────
 function ProductModal({ product, onClose, onSave }) {
-  const [form, setForm] = useState({
-    name: product?.name ?? "",
-    description: product?.description ?? "",
-    price: product?.price ?? "",
-    stock: product?.stock ?? "",
-    descuento: product?.descuento ?? 0,
-    categoryId: product?.categoryId ?? "",
-  });
+  const [form, setForm] = useState({ name: product?.name ?? "", description: product?.description ?? "", price: product?.price ?? "", stock: product?.stock ?? "", descuento: product?.descuento ?? 0, categoryId: product?.categoryId ?? "" });
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    apiFetch("/categories").then((r) => r?.json()).then((data) => {
-      if (Array.isArray(data)) setCategories(data);
-    }).catch(() => {});
+    apiFetch("/categories").then((r) => r?.json()).then((d) => { if (Array.isArray(d)) setCategories(d); }).catch(() => {});
   }, []);
-
-  function handleChange(e) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  }
 
   async function handleSubmit() {
     if (!form.name || !form.price) { setError("Nombre y precio son obligatorios."); return; }
     setLoading(true); setError(null);
     try {
       const method = product ? "PATCH" : "POST";
-      const path = product ? `/products/${product.id}` : "/products";
-      const body = {
-        ...form,
-        price: parseFloat(form.price),
-        stock: parseInt(form.stock) || 0,
-        descuento: parseFloat(form.descuento) || 0,
-        categoryId: form.categoryId ? parseInt(form.categoryId) : null,
-      };
-      const res = await apiFetch(path, { method, body: JSON.stringify(body) });
-      if (!res.ok) { setError(await readErrorMessage(res)); return; }
+      const body = { ...form, price: parseFloat(form.price), stock: parseInt(form.stock) || 0, descuento: parseFloat(form.descuento) || 0, categoryId: form.categoryId ? parseInt(form.categoryId) : null };
+      const res = await apiFetch(product ? `/products/${product.id}` : "/products", { method, body: JSON.stringify(body) });
+      if (!res?.ok) { setError(await readErrorMessage(res)); return; }
       onSave(await res.json(), !!product);
-    } catch { setError("Error al guardar el producto."); }
+    } catch { setError("Error al guardar."); }
     finally { setLoading(false); }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-lg text-gray-900">{product ? "Editar Producto" : "Nuevo Producto"}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2">{error}</div>}
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2 flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Nombre *</label>
-            <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Remera Blanca"
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all" />
-          </div>
-          <div className="col-span-2 flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Descripción</label>
-            <textarea name="description" value={form.description} onChange={handleChange} rows={3} placeholder="Descripción del producto..."
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all resize-none" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Precio ($) *</label>
-            <input type="number" name="price" value={form.price} onChange={handleChange} placeholder="0.00" step="0.01"
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stock</label>
-            <input type="number" name="stock" value={form.stock} onChange={handleChange} placeholder="0"
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Descuento (%)</label>
-            <input type="number" name="descuento" value={form.descuento} onChange={handleChange} placeholder="0" min="0" max="100"
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Categoría</label>
-            <select name="categoryId" value={form.categoryId} onChange={handleChange}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all">
+    <Modal title={product ? "Editar Producto" : "Nuevo Producto"} onClose={onClose}
+      footer={<>
+        <button style={S.btnSecondary} onClick={onClose}>Cancelar</button>
+        <button style={S.btnPrimary} onClick={handleSubmit} disabled={loading}>
+          {loading && <span style={{ width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />}
+          {product ? "Guardar" : "Crear Producto"}
+        </button>
+      </>}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+        {error && <div style={{ background: "#FCEBEB", borderRadius: "8px", padding: "10px 14px", fontSize: "12px", color: "#A32D2D" }}>{error}</div>}
+        <FormField label="Nombre *"><input type="text" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Nombre del producto" style={S.input} /></FormField>
+        <FormField label="Descripción"><textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={3} placeholder="Descripción..." style={{ ...S.input, resize: "none" }} /></FormField>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <FormField label="Precio ($) *"><input type="number" value={form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))} placeholder="0.00" step="0.01" style={S.input} /></FormField>
+          <FormField label="Stock"><input type="number" value={form.stock} onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))} placeholder="0" style={S.input} /></FormField>
+          <FormField label="Descuento (%)"><input type="number" value={form.descuento} onChange={(e) => setForm((p) => ({ ...p, descuento: e.target.value }))} placeholder="0" min="0" max="100" style={S.input} /></FormField>
+          <FormField label="Categoría">
+            <select value={form.categoryId} onChange={(e) => setForm((p) => ({ ...p, categoryId: e.target.value }))} style={{ ...S.input, appearance: "none" }}>
               <option value="">Sin categoría</option>
               {categories.map((c) => <option key={c.id} value={c.id}>{c.description}</option>)}
             </select>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Cancelar</button>
-          <button onClick={handleSubmit} disabled={loading}
-            className="px-4 py-2 rounded-lg bg-[#0058be] text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center gap-2">
-            {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-            {product ? "Guardar Cambios" : "Crear Producto"}
-          </button>
+          </FormField>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
-// ─── Página principal ────────────────────────────────────────────────────────
 export default function Products({ currentPage, onNavigate }) {
   const [products, setProducts] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -204,15 +123,15 @@ export default function Products({ currentPage, onNavigate }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modal, setModal] = useState(null);
-  const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
   const [page, setPage] = useState(1);
-  const PAGE_SIZE = 8;
+  const PAGE_SIZE = 9;
 
   async function fetchProducts() {
     setLoading(true); setError(null);
     try {
       const res = await apiFetch("/products");
-      if (!res.ok) throw new Error("No se pudieron cargar los productos.");
+      if (!res?.ok) throw new Error("Error al cargar productos.");
       const data = await res.json();
       setProducts(data.content ?? data);
     } catch (err) { setError(err.message); }
@@ -220,7 +139,6 @@ export default function Products({ currentPage, onNavigate }) {
   }
 
   useEffect(() => { fetchProducts(); }, []);
-
   useEffect(() => {
     const q = search.toLowerCase();
     setFiltered(q ? products.filter((p) => p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)) : products);
@@ -238,130 +156,102 @@ export default function Products({ currentPage, onNavigate }) {
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar este producto?")) return;
     try {
-      const res = await apiFetch(`/products/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Error al eliminar.");
+      await apiFetch(`/products/${id}`, { method: "DELETE" });
       setProducts((prev) => prev.filter((p) => p.id !== id));
     } catch (err) { alert(err.message); }
   }
 
-  function stockBadge(stock) {
-    if (stock == null) return null;
-    if (stock === 0) return <span className="flex items-center gap-1 text-red-600 font-mono text-sm"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />{stock}</span>;
-    if (stock <= 5) return <span className="flex items-center gap-1 text-yellow-600 font-mono text-sm"><span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />{stock}</span>;
-    return <span className="flex items-center gap-1 text-green-600 font-mono text-sm"><span className="w-2 h-2 rounded-full bg-green-400 inline-block" />{stock}</span>;
+  function StockIndicator({ stock }) {
+    if (stock == null) return <span style={{ color: "#6B89B8", fontSize: "12px" }}>—</span>;
+    const color = stock === 0 ? "#A32D2D" : stock <= 5 ? "#854F0B" : "#0F6E56";
+    const bg = stock === 0 ? "#FCEBEB" : stock <= 5 ? "#FAEEDA" : "#E1F5EE";
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "2px 8px", borderRadius: "20px", fontSize: "11px", fontWeight: "500", background: bg, color }}>
+        <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: color, display: "inline-block" }} />
+        {stock}
+      </span>
+    );
   }
 
   return (
-    <Layout
-      currentPage={currentPage}
-      onNavigate={onNavigate}
-      searchPlaceholder="Buscar producto..."
-      searchValue={search}
-      onSearch={setSearch}
+    <Layout currentPage={currentPage} onNavigate={onNavigate}
+      searchPlaceholder="Buscar producto..." searchValue={search} onSearch={setSearch}
       headerRight={
-        <div className="flex items-center gap-2">
-          <button onClick={() => setShowCategoryManager(true)}
-            className="flex items-center gap-2 border border-gray-200 text-gray-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm">
-            <span className="material-symbols-outlined text-[18px]">category</span>
-            Categorías
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button style={S.btnSecondary} onClick={() => setShowCategories(true)}>
+            <i className="ti ti-category" style={{ fontSize: "14px" }} aria-hidden="true" /> Categorías
           </button>
-          <button onClick={() => setModal("create")}
-            className="flex items-center gap-2 bg-[#0058be] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            Crear Nuevo
+          <button style={S.btnPrimary} onClick={() => setModal("create")}>
+            <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nuevo Producto
           </button>
         </div>
-      }
-    >
-      <div className="space-y-6">
+      }>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Inventario de Productos</h1>
-          <p className="text-sm text-gray-500 mt-1">Gestioná tu catálogo, precios y stock.</p>
+          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", margin: 0 }}>Productos</h1>
+          <p style={{ fontSize: "13px", color: "#6B89B8", marginTop: "4px" }}>Gestioná tu catálogo, precios y stock</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">error</span>{error}
-            <button onClick={fetchProducts} className="ml-auto underline">Reintentar</button>
-          </div>
-        )}
+        {error && <ErrorBanner message={error} onRetry={fetchProducts} />}
 
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-gray-50 border-b border-gray-200">
+        <div style={S.card}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
                 <tr>
-                  {["Nombre", "Descripción", "Categoría", "Precio", "Stock", "Descuento", "Acciones"].map((h) => (
-                    <th key={h} className={`py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap ${h === "Acciones" ? "text-center" : ""}`}>{h}</th>
+                  {["Nombre", "Descripción", "Categoría", "Precio", "Stock", "Descuento", ""].map((h, i) => (
+                    <th key={i} style={{ ...S.th, textAlign: h === "" ? "center" : "left" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      {Array.from({ length: 7 }).map((_, j) => (
-                        <td key={j} className="py-3 px-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>
-                      ))}
-                    </tr>
-                  ))
-                ) : paginated.length === 0 ? (
-                  <tr><td colSpan={7} className="py-12 text-center text-gray-400 text-sm">{search ? "Sin resultados." : "No hay productos aún."}</td></tr>
-                ) : (
-                  paginated.map((product) => (
-                    <tr key={product.id} className="hover:bg-gray-50 transition-colors group">
-                      <td className="py-3 px-4 font-semibold text-sm text-gray-900 whitespace-nowrap">{product.name}</td>
-                      <td className="py-3 px-4 text-sm text-gray-500 max-w-[220px] truncate">{product.description ?? "—"}</td>
-                      <td className="py-3 px-4">
-                        {product.categoryDescription
-                          ? <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-xs font-semibold">{product.categoryDescription}</span>
-                          : <span className="text-gray-300 text-sm">—</span>}
+              <tbody>
+                {loading ? <SkeletonRows cols={7} rows={6} /> :
+                  paginated.length === 0 ? (
+                    <tr><td colSpan={7} style={{ ...S.td, textAlign: "center", color: "#6B89B8", padding: "40px" }}>{search ? "Sin resultados." : "No hay productos aún."}</td></tr>
+                  ) : paginated.map((p) => (
+                    <tr key={p.id}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                      <td style={{ ...S.td, fontWeight: "500" }}>{p.name}</td>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8", maxWidth: "200px" }}>
+                        <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.description ?? "—"}</span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-sm text-gray-800 whitespace-nowrap">${Number(product.price).toFixed(2)}</td>
-                      <td className="py-3 px-4 whitespace-nowrap">{stockBadge(product.stock)}</td>
-                      <td className="py-3 px-4 text-sm text-gray-500 text-center">{product.descuento > 0 ? `${product.descuento}%` : "—"}</td>
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => setModal(product)} className="text-gray-400 hover:text-blue-600 transition-colors" title="Editar">
-                            <span className="material-symbols-outlined text-[18px]">edit</span>
-                          </button>
-                          <button onClick={() => handleDelete(product.id)} className="text-gray-400 hover:text-red-600 transition-colors" title="Eliminar">
-                            <span className="material-symbols-outlined text-[18px]">delete</span>
-                          </button>
+                      <td style={S.td}>
+                        {p.categoryDescription
+                          ? <span style={{ padding: "2px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: "#DCE8F8", color: "#1B3A6B" }}>{p.categoryDescription}</span>
+                          : <span style={{ color: "#B5CDE8", fontSize: "12px" }}>—</span>}
+                      </td>
+                      <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px" }}>${Number(p.price).toFixed(2)}</td>
+                      <td style={S.td}><StockIndicator stock={p.stock} /></td>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8" }}>{p.descuento > 0 ? `${p.descuento}%` : "—"}</td>
+                      <td style={{ ...S.td, textAlign: "center" }}>
+                        <div className="row-actions" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "2px", opacity: 0, transition: "opacity 0.15s" }}>
+                          {[
+                            { icon: "ti-edit", action: () => setModal(p), title: "Editar" },
+                            { icon: "ti-trash", action: () => handleDelete(p.id), title: "Eliminar" },
+                          ].map((btn) => (
+                            <button key={btn.icon} onClick={btn.action} title={btn.title}
+                              style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "#F0F4FA"; e.currentTarget.style.color = "#1B3A6B"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#6B89B8"; }}>
+                              <i className={`ti ${btn.icon}`} style={{ fontSize: "15px" }} aria-hidden="true" />
+                            </button>
+                          ))}
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
+                  ))}
               </tbody>
             </table>
           </div>
-
-          <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-gray-500">
-              {loading ? "Cargando..." : `Mostrando ${Math.min((page - 1) * PAGE_SIZE + 1, filtered.length)}–${Math.min(page * PAGE_SIZE, filtered.length)} de ${filtered.length} productos`}
-            </span>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}
-                className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-40">
-                <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-              </button>
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
-                <button key={p} onClick={() => setPage(p)}
-                  className={`w-8 h-8 flex items-center justify-center rounded text-sm font-medium transition-colors ${p === page ? "bg-[#0058be] text-white" : "text-gray-500 hover:bg-gray-200"}`}>
-                  {p}
-                </button>
-              ))}
-              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                className="w-8 h-8 flex items-center justify-center rounded text-gray-500 hover:bg-gray-200 transition-colors disabled:opacity-40">
-                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-              </button>
-            </div>
+          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(27,58,107,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: "12px", color: "#6B89B8" }}>{loading ? "Cargando..." : `${filtered.length} productos`}</span>
+            <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>
       </div>
 
-      {showCategoryManager && <CategoryManager onClose={() => setShowCategoryManager(false)} />}
+      {showCategories && <CategoryManager onClose={() => setShowCategories(false)} />}
       {modal && <ProductModal product={modal === "create" ? null : modal} onClose={() => setModal(null)} onSave={handleSave} />}
     </Layout>
   );
