@@ -14,7 +14,6 @@ import com.uade.tpo.demo.service.SaleService;
 
 @RestController
 @RequestMapping("/sales")
-@CrossOrigin(origins = "*")
 public class SaleController {
 
     @Autowired

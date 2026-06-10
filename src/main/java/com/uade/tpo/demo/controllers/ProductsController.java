@@ -18,7 +18,6 @@ import com.uade.tpo.demo.service.ProductService;
 
 @RestController
 @RequestMapping("/products")
-@CrossOrigin(origins = "*")
 public class ProductsController {
 
     @Autowired

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.uade.tpo.demo.entity.Sale;
@@ -20,7 +19,8 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
     List<Sale> findByDateBetween(LocalDateTime from, LocalDateTime to);
 
     // Ventas del mes actual
-    @Query("SELECT s FROM Sale s WHERE MONTH(s.date) = MONTH(CURRENT_DATE) AND YEAR(s.date) = YEAR(CURRENT_DATE)")
+    // PostgreSQL: EXTRACT(MONTH FROM ...) en lugar de MONTH()
+    @Query("SELECT s FROM Sale s WHERE EXTRACT(MONTH FROM s.date) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM s.date) = EXTRACT(YEAR FROM CURRENT_DATE)")
     List<Sale> findSalesThisMonth();
 
     // Total recaudado
@@ -28,11 +28,13 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
     Double getTotalRevenue();
 
     // Total recaudado este mes
+    // PostgreSQL: EXTRACT en lugar de MONTH() y YEAR()
     @Query("SELECT COALESCE(SUM(s.total), 0) FROM Sale s WHERE s.status = 'COMPLETED' " +
-           "AND MONTH(s.date) = MONTH(CURRENT_DATE) AND YEAR(s.date) = YEAR(CURRENT_DATE)")
+           "AND EXTRACT(MONTH FROM s.date) = EXTRACT(MONTH FROM CURRENT_DATE) " +
+           "AND EXTRACT(YEAR FROM s.date) = EXTRACT(YEAR FROM CURRENT_DATE)")
     Double getRevenueThisMonth();
 
-    // Top productos más vendidos (productId, productName, totalQty, totalRevenue)
+    // Top productos más vendidos
     @Query("SELECT si.product.id, si.product.name, SUM(si.quantity), SUM(si.quantity * si.unitPrice) " +
            "FROM SaleItem si WHERE si.sale.status = 'COMPLETED' " +
            "GROUP BY si.product.id, si.product.name ORDER BY SUM(si.quantity) DESC")
@@ -44,4 +46,3 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
            "GROUP BY s.client.id, s.client.name ORDER BY COUNT(s) DESC")
     List<Object[]> findTopClients();
 }
-

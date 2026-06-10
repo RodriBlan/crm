@@ -9,7 +9,6 @@ import com.uade.tpo.demo.service.StatsService;
 
 @RestController
 @RequestMapping("/stats")
-@CrossOrigin(origins = "*")
 public class StatsController {
 
     @Autowired

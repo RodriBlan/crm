@@ -12,7 +12,6 @@ import com.uade.tpo.demo.service.ClientService;
 
 @RestController
 @RequestMapping("/clients")
-@CrossOrigin(origins = "*")
 public class ClientController {
 
     private final ClientService clientService;
