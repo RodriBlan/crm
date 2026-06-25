@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:4002";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4002";
 
 /**
  * Wrapper de fetch que agrega automáticamente el JWT en cada request.
