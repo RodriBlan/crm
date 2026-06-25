@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import { clearApiCache } from "../utils/apiFetch";
 
 const AuthContext = createContext(null);
 
@@ -26,6 +27,7 @@ export function AuthProvider({ children }) {
     const data = await res.json();
     sessionStorage.setItem("crm_token", data.token);
     sessionStorage.setItem("crm_user", JSON.stringify({ username: data.username, role: data.role }));
+    clearApiCache();
     setToken(data.token);
     setUser({ username: data.username, role: data.role });
     return data;
@@ -34,6 +36,7 @@ export function AuthProvider({ children }) {
   function logout() {
     sessionStorage.removeItem("crm_token");
     sessionStorage.removeItem("crm_user");
+    clearApiCache();
     setToken(null);
     setUser(null);
   }

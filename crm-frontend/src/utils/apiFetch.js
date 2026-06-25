@@ -1,4 +1,17 @@
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4002";
+const CACHE_TTL = 5 * 60 * 1000;
+const getCache = new Map();
+
+function responseFromCache(entry) {
+  return new Response(entry.body, {
+    status: entry.status,
+    headers: entry.headers,
+  });
+}
+
+export function clearApiCache() {
+  getCache.clear();
+}
 
 /**
  * Wrapper de fetch que agrega automáticamente el JWT en cada request.
@@ -7,6 +20,18 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4002";
  */
 export async function apiFetch(path, options = {}) {
   const token = sessionStorage.getItem("crm_token");
+  const method = (options.method || "GET").toUpperCase();
+  const cacheKey = `${method}:${path}`;
+
+  if (method === "GET") {
+    const cached = getCache.get(cacheKey);
+    if (cached && Date.now() - cached.createdAt < CACHE_TTL) {
+      return responseFromCache(cached);
+    }
+    if (cached) getCache.delete(cacheKey);
+  } else {
+    clearApiCache();
+  }
 
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
@@ -21,8 +46,19 @@ export async function apiFetch(path, options = {}) {
   if (res.status === 401 || res.status === 403) {
     sessionStorage.removeItem("crm_token");
     sessionStorage.removeItem("crm_user");
+    clearApiCache();
     window.location.href = "/";
     return null;
+  }
+
+  if (method === "GET" && res.ok) {
+    const body = await res.clone().text();
+    getCache.set(cacheKey, {
+      body,
+      status: res.status,
+      headers: { "Content-Type": res.headers.get("Content-Type") || "application/json" },
+      createdAt: Date.now(),
+    });
   }
 
   // Para cualquier otro error devolver la respuesta
