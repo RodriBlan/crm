@@ -1,6 +1,25 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
+const inputFields = [
+  {
+    label: "Usuario",
+    name: "username",
+    type: "text",
+    placeholder: "Nombre de usuario asignado",
+    icon: "ti-user",
+    autoComplete: "username",
+  },
+  {
+    label: "Contrasena",
+    name: "password",
+    type: "password",
+    placeholder: "Contrasena de acceso",
+    icon: "ti-lock",
+    autoComplete: "current-password",
+  },
+];
+
 export default function Login() {
   const { login } = useAuth();
   const [form, setForm] = useState({ username: "", password: "" });
@@ -27,63 +46,86 @@ export default function Login() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F0F4FA", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: "50vh", background: "#1B3A6B", zIndex: 0 }} />
-
-      <div style={{ width: "100%", maxWidth: "380px", padding: "0 24px", position: "relative", zIndex: 1 }}>
-        <div style={{ textAlign: "center", marginBottom: "28px" }}>
-          <div style={{ width: "44px", height: "44px", background: "rgba(255,255,255,0.15)", borderRadius: "12px", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "600", color: "#fff", marginBottom: "14px" }}>P</div>
-          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#fff", margin: 0 }}>PrintVar CRM</h1>
-          <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.65)", marginTop: "6px" }}>Sistema privado para usuarios autorizados</p>
+    <main className="login-screen">
+      <section className="login-intro" aria-label="Informacion del sistema">
+        <div className="login-brand">
+          <div className="login-brand-mark">PV</div>
+          <div>
+            <p className="login-brand-label">PrintVar</p>
+            <h1>CRM Comercial</h1>
+          </div>
         </div>
 
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "28px", boxShadow: "0 8px 40px rgba(27,58,107,0.15)" }}>
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className="login-copy">
+          <p className="login-eyebrow">Plataforma privada</p>
+          <h2>Gestion centralizada para clientes, productos y ventas.</h2>
+          <p>
+            Acceso exclusivo para el equipo autorizado de PrintVar. La plataforma no solicita datos bancarios,
+            codigos externos ni informacion personal fuera del flujo de gestion comercial.
+          </p>
+        </div>
+
+        <div className="login-trust-list" aria-label="Caracteristicas de seguridad">
+          <div>
+            <i className="ti ti-shield-check" aria-hidden="true" />
+            <span>Acceso autenticado</span>
+          </div>
+          <div>
+            <i className="ti ti-database" aria-hidden="true" />
+            <span>Datos comerciales internos</span>
+          </div>
+          <div>
+            <i className="ti ti-lock-check" aria-hidden="true" />
+            <span>Uso autorizado solamente</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="login-panel" aria-label="Inicio de sesion">
+        <div className="login-card">
+          <div className="login-card-heading">
+            <p>Inicio de sesion</p>
+            <h2>Ingresar al panel</h2>
+            <span>Usa las credenciales creadas por el administrador del sistema.</span>
+          </div>
+
+          <form onSubmit={handleSubmit} className="login-form">
             {error && (
-              <div style={{ background: "#FCEBEB", border: "0.5px solid rgba(163,45,45,0.2)", borderRadius: "8px", padding: "10px 14px", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#A32D2D" }}>
-                <i className="ti ti-alert-circle" style={{ fontSize: "15px", flexShrink: 0 }} aria-hidden="true" />
-                {error}
+              <div className="login-error" role="alert">
+                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <span>{error}</span>
               </div>
             )}
 
-            {[
-              { label: "Usuario", name: "username", type: "text", placeholder: "tu usuario", icon: "ti-user", autoComplete: "username" },
-              { label: "Contrasena", name: "password", type: "password", placeholder: "********", icon: "ti-lock", autoComplete: "current-password" },
-            ].map((f) => (
-              <div key={f.name} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                <label style={{ fontSize: "11px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>{f.label}</label>
-                <div style={{ position: "relative" }}>
-                  <i className={`ti ${f.icon}`} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "15px", color: "#6B89B8" }} aria-hidden="true" />
+            {inputFields.map((field) => (
+              <label className="login-field" key={field.name}>
+                <span>{field.label}</span>
+                <div>
+                  <i className={`ti ${field.icon}`} aria-hidden="true" />
                   <input
-                    type={f.type}
-                    name={f.name}
-                    value={form[f.name]}
-                    onChange={(e) => setForm((p) => ({ ...p, [f.name]: e.target.value }))}
-                    placeholder={f.placeholder}
-                    autoComplete={f.autoComplete}
-                    style={{ width: "100%", paddingLeft: "38px", paddingRight: "12px", paddingTop: "10px", paddingBottom: "10px", border: "0.5px solid rgba(27,58,107,0.15)", borderRadius: "8px", fontSize: "13px", color: "#1B3A6B", outline: "none", boxSizing: "border-box" }}
+                    type={field.type}
+                    name={field.name}
+                    value={form[field.name]}
+                    onChange={(e) => setForm((current) => ({ ...current, [field.name]: e.target.value }))}
+                    placeholder={field.placeholder}
+                    autoComplete={field.autoComplete}
                   />
                 </div>
-              </div>
+              </label>
             ))}
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{ background: "#1B3A6B", color: "#fff", border: "none", borderRadius: "20px", padding: "11px", fontSize: "13px", fontWeight: "500", cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "4px" }}
-            >
-              {loading && <span style={{ width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />}
-              Ingresar
+            <button className="login-submit" type="submit" disabled={loading}>
+              {loading && <span className="login-spinner" aria-hidden="true" />}
+              {loading ? "Verificando..." : "Ingresar"}
             </button>
           </form>
 
-          <p style={{ margin: "16px 0 0", fontSize: "11px", lineHeight: 1.5, color: "#6B89B8", textAlign: "center" }}>
-            Acceso exclusivo para gestion interna de PrintVar. Este sitio no solicita datos bancarios ni codigos de verificacion externos.
-          </p>
+          <div className="login-note">
+            <i className="ti ti-info-circle" aria-hidden="true" />
+            <p>Si no tenes acceso, solicita un usuario al responsable interno de PrintVar.</p>
+          </div>
         </div>
-      </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } } input::placeholder { color: #B5CDE8; }`}</style>
-    </div>
+      </section>
+    </main>
   );
 }
