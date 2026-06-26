@@ -2,31 +2,32 @@ import Sidebar from "./Sidebar";
 
 export default function Layout({ currentPage, onNavigate, searchPlaceholder, onSearch, searchValue, showSearch = true, headerRight, children }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#F0F4FA", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="app-shell" style={{ display: "flex", minHeight: "100vh", background: "#F0F4FA", fontFamily: "'Inter', system-ui, sans-serif" }}>
       <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
 
-      <main style={{ flex: 1, marginLeft: "200px", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        {/* Topbar */}
-        <header style={{ background: "#fff", borderBottom: "0.5px solid rgba(27,58,107,0.1)", padding: "0 20px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 40 }}>
-          {/* Search — solo si showSearch es true */}
+      <main className="app-main" style={{ flex: 1, marginLeft: "200px", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        <header className="app-topbar" style={{ background: "#fff", borderBottom: "0.5px solid rgba(27,58,107,0.1)", padding: "0 20px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 40 }}>
           {showSearch ? (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#F0F4FA", border: "0.5px solid rgba(27,58,107,0.1)", borderRadius: "20px", padding: "7px 14px", width: "220px" }}>
+            <div className="app-search" style={{ display: "flex", alignItems: "center", gap: "8px", background: "#F0F4FA", border: "0.5px solid rgba(27,58,107,0.1)", borderRadius: "20px", padding: "7px 14px", width: "220px" }}>
               <i className="ti ti-search" style={{ fontSize: "14px", color: "#6B89B8" }} aria-hidden="true" />
-              <input type="text" placeholder={searchPlaceholder ?? "Buscar..."} value={searchValue ?? ""} onChange={(e) => onSearch?.(e.target.value)}
-                style={{ background: "none", border: "none", outline: "none", fontSize: "12px", color: "#1B3A6B", width: "100%" }} />
+              <input
+                type="text"
+                placeholder={searchPlaceholder ?? "Buscar..."}
+                value={searchValue ?? ""}
+                onChange={(e) => onSearch?.(e.target.value)}
+                style={{ background: "none", border: "none", outline: "none", fontSize: "12px", color: "#1B3A6B", width: "100%" }}
+              />
             </div>
           ) : (
-            <div /> /* spacer vacío para mantener el flex */
+            <div />
           )}
 
-          {/* Right — solo el botón de acción */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div className="app-header-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             {headerRight}
           </div>
         </header>
 
-        {/* Content */}
-        <div style={{ flex: 1, padding: "24px", overflowY: "auto" }}>
+        <div className="app-content" style={{ flex: 1, padding: "24px", overflowY: "auto" }}>
           <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
             {children}
           </div>

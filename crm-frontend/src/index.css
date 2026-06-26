@@ -26,3 +26,113 @@ input:focus, textarea:focus, select:focus {
   outline: none !important;
 }
 tr:hover .row-actions { opacity: 1 !important; }
+
+@media (max-width: 760px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .app-shell {
+    display: block !important;
+    padding-bottom: 72px;
+  }
+
+  .app-sidebar {
+    width: 100% !important;
+    height: 64px !important;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .sidebar-brand,
+  .sidebar-footer,
+  .sidebar-section {
+    display: none !important;
+  }
+
+  .sidebar-nav {
+    display: grid !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px !important;
+    width: 100%;
+    padding: 6px 8px !important;
+    overflow: visible !important;
+  }
+
+  .sidebar-link {
+    height: 52px !important;
+    min-width: 0 !important;
+    padding: 6px 4px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    font-size: 10px !important;
+    border-radius: 10px !important;
+    text-align: center !important;
+  }
+
+  .sidebar-link i {
+    font-size: 18px !important;
+  }
+
+  .sidebar-link span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-main {
+    margin-left: 0 !important;
+    min-height: calc(100vh - 72px) !important;
+  }
+
+  .app-topbar {
+    height: auto !important;
+    min-height: 56px !important;
+    padding: 10px 12px !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+
+  .app-search {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .app-header-actions {
+    flex-shrink: 0;
+  }
+
+  .app-content {
+    padding: 14px !important;
+  }
+
+  h1 {
+    font-size: 22px !important;
+  }
+
+  table {
+    min-width: 640px;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-topbar {
+    flex-direction: column !important;
+  }
+
+  .app-header-actions,
+  .app-header-actions > * {
+    width: 100%;
+  }
+
+  .app-header-actions button {
+    justify-content: center !important;
+  }
+}
