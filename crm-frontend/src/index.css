@@ -162,6 +162,28 @@ tr:hover .row-actions { opacity: 1 !important; }
   line-height: 1.35;
 }
 
+.login-public-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 740px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
+}
+
+.login-public-info a {
+  color: #BFE2FF;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-public-info a:hover {
+  text-decoration: underline;
+}
+
 .login-panel {
   min-height: 100vh;
   padding: clamp(20px, 5vw, 56px);
@@ -328,6 +350,26 @@ tr:hover .row-actions { opacity: 1 !important; }
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
+}
+
+.login-public-links {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.login-public-links a {
+  color: #5577A1;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.login-public-links a:hover {
+  color: #1B3A6B;
+  text-decoration: underline;
 }
 
 @media (max-width: 760px) {

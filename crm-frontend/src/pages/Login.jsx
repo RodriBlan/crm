@@ -20,6 +20,8 @@ const inputFields = [
   },
 ];
 
+const supportEmail = "soporte@printvar.com";
+
 export default function Login() {
   const { login } = useAuth();
   const [form, setForm] = useState({ username: "", password: "" });
@@ -58,10 +60,10 @@ export default function Login() {
 
         <div className="login-copy">
           <p className="login-eyebrow">Plataforma privada</p>
-          <h2>Gestion centralizada para clientes, productos y ventas.</h2>
+          <h2>Sistema interno de gestion comercial de PrintVar.</h2>
           <p>
-            Acceso exclusivo para el equipo autorizado de PrintVar. La plataforma no solicita datos bancarios,
-            codigos externos ni informacion personal fuera del flujo de gestion comercial.
+            Acceso exclusivo para usuarios autorizados. Este sitio pertenece a PrintVar y se usa para
+            administrar clientes, productos, ventas e historial comercial interno.
           </p>
         </div>
 
@@ -78,6 +80,11 @@ export default function Login() {
             <i className="ti ti-lock-check" aria-hidden="true" />
             <span>Uso autorizado solamente</span>
           </div>
+        </div>
+
+        <div className="login-public-info" aria-label="Informacion publica del sitio">
+          <span>Contacto de soporte: <a href={`mailto:${supportEmail}`}>{supportEmail}</a></span>
+          <span>PrintVar CRM no solicita datos bancarios, codigos de terceros ni pagos online.</span>
         </div>
       </section>
 
@@ -124,6 +131,12 @@ export default function Login() {
             <i className="ti ti-info-circle" aria-hidden="true" />
             <p>Si no tenes acceso, solicita un usuario al responsable interno de PrintVar.</p>
           </div>
+
+          <nav className="login-public-links" aria-label="Informacion legal y de seguridad">
+            <a href="/privacy.html">Privacidad</a>
+            <a href="/security.html">Seguridad</a>
+            <a href={`mailto:${supportEmail}`}>Contacto</a>
+          </nav>
         </div>
       </section>
     </main>
