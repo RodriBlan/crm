@@ -20,7 +20,7 @@ const inputFields = [
   },
 ];
 
-const supportEmail = "soporte@printvar.com";
+const supportEmail = "rodrigoblanco1000@gmail.com";
 
 export default function Login() {
   const { login } = useAuth();
@@ -53,17 +53,17 @@ export default function Login() {
         <div className="login-brand">
           <div className="login-brand-mark">PV</div>
           <div>
-            <p className="login-brand-label">PrintVar</p>
-            <h1>CRM Comercial</h1>
+            <p className="login-brand-label">YourClients</p>
+            <h1>YourClients CRM</h1>
           </div>
         </div>
 
         <div className="login-copy">
           <p className="login-eyebrow">Plataforma privada</p>
-          <h2>Sistema interno de gestion comercial de PrintVar.</h2>
+          <h2>Sistema interno de gestion comercial para clientes y ventas.</h2>
           <p>
-            Acceso exclusivo para usuarios autorizados. Este sitio pertenece a PrintVar y se usa para
-            administrar clientes, productos, ventas e historial comercial interno.
+            Acceso exclusivo para usuarios autorizados. YourClients CRM se usa para administrar
+            clientes, productos, ventas e historial comercial interno.
           </p>
         </div>
 
@@ -84,7 +84,7 @@ export default function Login() {
 
         <div className="login-public-info" aria-label="Informacion publica del sitio">
           <span>Contacto de soporte: <a href={`mailto:${supportEmail}`}>{supportEmail}</a></span>
-          <span>PrintVar CRM no solicita datos bancarios, codigos de terceros ni pagos online.</span>
+          <span>YourClients CRM no solicita datos bancarios, codigos de terceros ni pagos online.</span>
         </div>
       </section>
 
@@ -129,7 +129,7 @@ export default function Login() {
 
           <div className="login-note">
             <i className="ti ti-info-circle" aria-hidden="true" />
-            <p>Si no tenes acceso, solicita un usuario al responsable interno de PrintVar.</p>
+            <p>Si no tenes acceso, solicita un usuario al responsable interno o escribi al contacto de soporte.</p>
           </div>
 
           <nav className="login-public-links" aria-label="Informacion legal y de seguridad">

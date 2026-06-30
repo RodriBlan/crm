@@ -1,3 +1,3 @@
-Contact: mailto:soporte@printvar.com
+Contact: mailto:rodrigoblanco1000@gmail.com
 Preferred-Languages: es
 Canonical: https://crm-six-sable-77.vercel.app/.well-known/security.txt
