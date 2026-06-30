@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4002";
+import { getApiUrl } from "./config";
+
+const API_URL = getApiUrl();
 const CACHE_TTL = 5 * 60 * 1000;
 const getCache = new Map();
 

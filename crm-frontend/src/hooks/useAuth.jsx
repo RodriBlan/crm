@@ -1,9 +1,10 @@
 import { createContext, useContext, useState } from "react";
 import { clearApiCache } from "../utils/apiFetch";
+import { getApiUrl } from "../utils/config";
 
 const AuthContext = createContext(null);
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4002";
+const API_URL = getApiUrl();
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => sessionStorage.getItem("crm_token"));

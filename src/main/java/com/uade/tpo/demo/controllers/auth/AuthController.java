@@ -7,8 +7,11 @@ import com.uade.tpo.demo.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
@@ -17,9 +20,15 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @Value("${app.auth.registration-enabled:false}")
+    private boolean registrationEnabled;
+
     // POST /auth/register — solo para crear el admin la primera vez
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
+        if (!registrationEnabled) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registro deshabilitado.");
+        }
         return ResponseEntity.ok(authService.register(request));
     }
 

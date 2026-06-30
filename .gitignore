@@ -36,6 +36,10 @@ build/
 *.env
 application-prod.properties
 application-local.properties
+application-prod.yml
+application-local.yml
+.env.local
+.env.production
 
 # Build
 target/

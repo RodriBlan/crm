@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * A09 / Fuerza bruta: limita los intentos de login por IP.
+ * A09 / Fuerza bruta: limita los intentos de login/registro por IP.
  * Máximo 10 intentos en 5 minutos por IP.
  * Si se supera, devuelve 429 Too Many Requests.
  */
@@ -35,8 +35,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Solo limitar el endpoint de login
-        if (!request.getRequestURI().equals("/auth/login") || !request.getMethod().equals("POST")) {
+        boolean sensitiveAuthEndpoint = request.getRequestURI().equals("/auth/login")
+                || request.getRequestURI().equals("/auth/register");
+
+        if (!sensitiveAuthEndpoint || !request.getMethod().equals("POST")) {
             filterChain.doFilter(request, response);
             return;
         }

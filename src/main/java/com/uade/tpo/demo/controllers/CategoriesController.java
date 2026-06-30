@@ -5,8 +5,10 @@ import com.uade.tpo.demo.entity.dto.CategoryResponse;
 import com.uade.tpo.demo.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 
 import java.net.URI;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
+@Validated
 public class CategoriesController {
 
     private final CategoryService categoryService;
@@ -34,14 +37,14 @@ public class CategoriesController {
     // PUT /categories/{id}
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> updateCategory(
-            @PathVariable Long id,
+            @PathVariable @Positive Long id,
             @RequestBody @Valid CategoryRequest request) {
         return ResponseEntity.ok(categoryService.updateCategory(id, request));
     }
 
     // DELETE /categories/{id}
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable @Positive Long id) {
         categoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }

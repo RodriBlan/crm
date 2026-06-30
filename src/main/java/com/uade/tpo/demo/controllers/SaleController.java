@@ -5,8 +5,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
 
 import com.uade.tpo.demo.entity.dto.SaleRequest;
 import com.uade.tpo.demo.entity.dto.SaleResponse;
@@ -14,6 +18,7 @@ import com.uade.tpo.demo.service.SaleService;
 
 @RestController
 @RequestMapping("/sales")
+@Validated
 public class SaleController {
 
     @Autowired
@@ -34,27 +39,27 @@ public class SaleController {
 
     // GET /sales/{id}
     @GetMapping("/{saleId}")
-    public ResponseEntity<SaleResponse> getSaleById(@PathVariable Long saleId) {
+    public ResponseEntity<SaleResponse> getSaleById(@PathVariable @Positive Long saleId) {
         return ResponseEntity.ok(saleService.getSaleById(saleId));
     }
 
     // GET /sales/client/{clientId}  → historial de compras del cliente
     @GetMapping("/client/{clientId}")
-    public ResponseEntity<List<SaleResponse>> getSalesByClient(@PathVariable Long clientId) {
+    public ResponseEntity<List<SaleResponse>> getSalesByClient(@PathVariable @Positive Long clientId) {
         return ResponseEntity.ok(saleService.getSalesByClient(clientId));
     }
 
     // PATCH /sales/{id}/status?status=CANCELLED
     @PatchMapping("/{saleId}/status")
     public ResponseEntity<SaleResponse> updateSaleStatus(
-            @PathVariable Long saleId,
-            @RequestParam String status) {
+            @PathVariable @Positive Long saleId,
+            @RequestParam @NotBlank @Pattern(regexp = "COMPLETED|CANCELLED|PENDING") String status) {
         return ResponseEntity.ok(saleService.updateSaleStatus(saleId, status));
     }
 
     // DELETE /sales/{id}
     @DeleteMapping("/{saleId}")
-    public ResponseEntity<Void> deleteSale(@PathVariable Long saleId) {
+    public ResponseEntity<Void> deleteSale(@PathVariable @Positive Long saleId) {
         saleService.deleteSale(saleId);
         return ResponseEntity.noContent().build();
     }
