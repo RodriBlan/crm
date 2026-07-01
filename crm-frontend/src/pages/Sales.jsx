@@ -142,16 +142,16 @@ export function NewSaleModal({ onClose, onSave }) {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(27,58,107,0.35)", backdropFilter: "blur(4px)" }}>
-      <div style={{ background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "560px", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(27,58,107,0.15)" }}>
-        <div style={{ padding: "18px 22px", borderBottom: "0.5px solid rgba(27,58,107,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+    <div className="app-modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(27,58,107,0.35)", backdropFilter: "blur(4px)" }}>
+      <div className="app-modal app-modal-wide" style={{ background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "560px", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(27,58,107,0.15)" }}>
+        <div className="app-modal-header" style={{ padding: "18px 22px", borderBottom: "0.5px solid rgba(27,58,107,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <span style={{ fontSize: "15px", fontWeight: "500", color: "#1B3A6B" }}>Registrar Nueva Venta</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8" }}>
             <i className="ti ti-x" style={{ fontSize: "18px" }} aria-hidden="true" />
           </button>
         </div>
 
-        <div style={{ padding: "20px 22px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div className="app-modal-body sale-modal-body" style={{ padding: "20px 22px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "16px" }}>
           {error && (
             <div style={{ background: "#FCEBEB", border: "0.5px solid rgba(163,45,45,0.2)", borderRadius: "8px", padding: "10px 14px", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#A32D2D" }}>
               <i className="ti ti-alert-circle" style={{ fontSize: "15px" }} aria-hidden="true" />{error}
@@ -289,7 +289,7 @@ export function NewSaleModal({ onClose, onSave }) {
           </div>
         </div>
 
-        <div style={{ padding: "14px 22px", borderTop: "0.5px solid rgba(27,58,107,0.1)", display: "flex", justifyContent: "flex-end", gap: "8px", flexShrink: 0 }}>
+        <div className="app-modal-footer" style={{ padding: "14px 22px", borderTop: "0.5px solid rgba(27,58,107,0.1)", display: "flex", justifyContent: "flex-end", gap: "8px", flexShrink: 0 }}>
           <button style={S.btnSecondary} onClick={onClose}>Cancelar</button>
           <button style={S.btnWarning} onClick={() => handleSubmit("PENDING")} disabled={loading}>
             <i className="ti ti-clock" style={{ fontSize: "14px" }} aria-hidden="true" /> Dejar Pendiente

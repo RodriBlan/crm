@@ -175,16 +175,16 @@ export function SkeletonRows({ cols = 5, rows = 5 }) {
 
 export function Modal({ title, onClose, children, footer }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(27,58,107,0.35)", backdropFilter: "blur(4px)" }}>
-      <div style={{ background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "460px", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(27,58,107,0.15)" }}>
-        <div style={{ padding: "18px 22px", borderBottom: "0.5px solid rgba(27,58,107,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+    <div className="app-modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(27,58,107,0.35)", backdropFilter: "blur(4px)" }}>
+      <div className="app-modal" style={{ background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "460px", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(27,58,107,0.15)" }}>
+        <div className="app-modal-header" style={{ padding: "18px 22px", borderBottom: "0.5px solid rgba(27,58,107,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <span style={{ fontSize: "15px", fontWeight: "500", color: "#1B3A6B" }}>{title}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", display: "flex", alignItems: "center", padding: "2px" }}>
             <i className="ti ti-x" style={{ fontSize: "18px" }} aria-hidden="true" />
           </button>
         </div>
-        <div style={{ padding: "20px 22px", overflowY: "auto", flex: 1 }}>{children}</div>
-        {footer && <div style={{ padding: "14px 22px", borderTop: "0.5px solid rgba(27,58,107,0.1)", display: "flex", justifyContent: "flex-end", gap: "8px", flexShrink: 0 }}>{footer}</div>}
+        <div className="app-modal-body" style={{ padding: "20px 22px", overflowY: "auto", flex: 1 }}>{children}</div>
+        {footer && <div className="app-modal-footer" style={{ padding: "14px 22px", borderTop: "0.5px solid rgba(27,58,107,0.1)", display: "flex", justifyContent: "flex-end", gap: "8px", flexShrink: 0 }}>{footer}</div>}
       </div>
     </div>
   );

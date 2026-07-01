@@ -458,12 +458,167 @@ tr:hover .row-actions { opacity: 1 !important; }
     padding: 14px !important;
   }
 
+  .app-content > div {
+    max-width: 100% !important;
+  }
+
+  .app-content [style*="flex-direction: column"] {
+    min-width: 0;
+  }
+
+  .app-content [style*="grid-template-columns: repeat(4, 1fr)"],
+  .app-content [style*="grid-template-columns: repeat(3, 1fr)"],
+  .app-content [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app-content [style*="display: flex"][style*="gap: 8px"],
+  .app-content [style*="display: flex"][style*="gap: \"8px\""] {
+    flex-wrap: wrap;
+  }
+
+  .app-content [style*="align-items: flex-end"] {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .app-content [style*="justify-content: space-between"] {
+    gap: 12px;
+  }
+
+  .app-content [style*="width: 280px"] {
+    width: 100% !important;
+  }
+
+  .app-content [style*="width: 320px"],
+  .app-content [style*="maxWidth: 320px"] {
+    width: 100% !important;
+  }
+
+  .app-header-actions,
+  .app-header-actions > div {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 8px !important;
+  }
+
+  .app-header-actions button,
+  .app-content button {
+    min-height: 40px;
+    justify-content: center !important;
+  }
+
+  .app-content [style*="overflow-x: auto"] {
+    overflow-x: visible !important;
+  }
+
+  .app-content table {
+    min-width: 0 !important;
+    width: 100% !important;
+    display: block;
+  }
+
+  .app-content thead {
+    display: none;
+  }
+
+  .app-content tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .app-content tr {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: #fff !important;
+    border: 1px solid rgba(27, 58, 107, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .app-content td {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    border-bottom: 1px solid rgba(27, 58, 107, 0.06) !important;
+    padding: 11px 12px !important;
+    text-align: left !important;
+    max-width: none !important;
+    white-space: normal !important;
+  }
+
+  .app-content td:last-child {
+    border-bottom: none !important;
+  }
+
+  .app-content td[colspan] {
+    display: block;
+    text-align: center !important;
+  }
+
+  .row-actions {
+    opacity: 1 !important;
+    justify-content: flex-end !important;
+  }
+
+  .app-modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .app-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  .app-modal-header,
+  .app-modal-body,
+  .app-modal-footer {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .app-modal-footer {
+    flex-direction: column-reverse !important;
+  }
+
+  .app-modal-footer button {
+    width: 100%;
+  }
+
+  .sale-modal-body [style*="align-items: flex-start"] {
+    flex-direction: column !important;
+  }
+
+  .sale-modal-body [style*="width: 70px"] {
+    width: 100% !important;
+    text-align: left !important;
+  }
+
+  .sale-modal-body [style*="position: absolute"][style*="top: 100%"] {
+    position: static !important;
+    margin-top: 6px !important;
+  }
+
+  [style*="position: fixed"][style*="justify-content: flex-end"] > [style*="width: 320px"] {
+    width: min(100%, 420px) !important;
+  }
+
   h1 {
     font-size: 22px !important;
   }
 
-  table {
-    min-width: 640px;
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 }
 
