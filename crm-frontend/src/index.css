@@ -625,7 +625,9 @@ tr:hover .row-actions { opacity: 1 !important; }
 @media (max-width: 860px) {
   .login-screen {
     grid-template-columns: 1fr;
-    background: #F0F4FA;
+    background:
+      linear-gradient(135deg, rgba(27, 58, 107, 0.96), rgba(18, 35, 68, 0.98)),
+      #1B3A6B;
   }
 
   .login-intro {
