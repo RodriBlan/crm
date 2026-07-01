@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
 const inputFields = [
@@ -27,6 +27,17 @@ export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [slowServer, setSlowServer] = useState(false);
+
+  useEffect(() => {
+    if (!loading) {
+      setSlowServer(false);
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => setSlowServer(true), 6000);
+    return () => window.clearTimeout(timeoutId);
+  }, [loading]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -36,6 +47,7 @@ export default function Login() {
     }
 
     setLoading(true);
+    setSlowServer(false);
     setError(null);
 
     try {
@@ -104,6 +116,13 @@ export default function Login() {
               </div>
             )}
 
+            {slowServer && !error && (
+              <div className="login-status" role="status">
+                <i className="ti ti-clock-hour-4" aria-hidden="true" />
+                <span>El servidor puede estar despertando. Esto puede tardar hasta un minuto en el plan gratuito.</span>
+              </div>
+            )}
+
             {inputFields.map((field) => (
               <label className="login-field" key={field.name}>
                 <span>{field.label}</span>
@@ -123,7 +142,7 @@ export default function Login() {
 
             <button className="login-submit" type="submit" disabled={loading}>
               {loading && <span className="login-spinner" aria-hidden="true" />}
-              {loading ? "Verificando..." : "Ingresar"}
+              {loading ? (slowServer ? "Esperando servidor..." : "Verificando...") : "Ingresar"}
             </button>
           </form>
 

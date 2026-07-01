@@ -3,34 +3,54 @@ import { clearApiCache } from "../utils/apiFetch";
 import { getApiUrl } from "../utils/config";
 
 const AuthContext = createContext(null);
-
 const API_URL = getApiUrl();
+const LOGIN_TIMEOUT_MS = 45000;
+
+function createTimeoutSignal(timeoutMs) {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+  return { signal: controller.signal, clear: () => window.clearTimeout(timeoutId) };
+}
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => sessionStorage.getItem("crm_token"));
   const [user, setUser] = useState(() => {
-    const u = sessionStorage.getItem("crm_user");
-    return u ? JSON.parse(u) : null;
+    const storedUser = sessionStorage.getItem("crm_user");
+    return storedUser ? JSON.parse(storedUser) : null;
   });
 
   async function login(username, password) {
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
+    const timeout = createTimeoutSignal(LOGIN_TIMEOUT_MS);
+    let res;
+
+    try {
+      res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        signal: timeout.signal,
+      });
+    } catch (err) {
+      if (err.name === "AbortError") {
+        throw new Error("El servidor esta tardando en responder. Espera unos segundos y volve a intentar.");
+      }
+      throw new Error("No se pudo conectar con el servidor. Revisa tu conexion e intenta de nuevo.");
+    } finally {
+      timeout.clear();
+    }
 
     if (!res.ok) {
-      const err = await res.text();
-      throw new Error("Usuario o contraseña incorrectos");
+      throw new Error("Usuario o contrasena incorrectos");
     }
 
     const data = await res.json();
+    const nextUser = { username: data.username, role: data.role };
+
     sessionStorage.setItem("crm_token", data.token);
-    sessionStorage.setItem("crm_user", JSON.stringify({ username: data.username, role: data.role }));
+    sessionStorage.setItem("crm_user", JSON.stringify(nextUser));
     clearApiCache();
     setToken(data.token);
-    setUser({ username: data.username, role: data.role });
+    setUser(nextUser);
     return data;
   }
 
@@ -52,4 +72,3 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
-

@@ -9,15 +9,20 @@ const NAV = [
 ];
 
 export default function Sidebar({ currentPage, onNavigate }) {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
+
+  function goToLogin() {
+    window.history.pushState(null, "", "/login");
+    window.dispatchEvent(new Event("popstate"));
+  }
 
   return (
     <nav className="app-sidebar" style={{ width: "200px", background: "#1B3A6B", display: "flex", flexDirection: "column", flexShrink: 0, height: "100vh", position: "fixed", left: 0, top: 0, zIndex: 50 }}>
       <div className="sidebar-brand" style={{ padding: "18px 16px", borderBottom: "0.5px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: "10px" }}>
-        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "500", color: "#fff", flexShrink: 0 }}>PV</div>
+        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "500", color: "#fff", flexShrink: 0 }}>YC</div>
         <div>
-          <div style={{ fontSize: "14px", fontWeight: "500", color: "#fff", lineHeight: 1.2 }}>Santi V</div>
-          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)", marginTop: "2px" }}></div>
+          <div style={{ fontSize: "14px", fontWeight: "500", color: "#fff", lineHeight: 1.2 }}>YourClients</div>
+          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.45)", marginTop: "2px" }}>{isAuthenticated ? "CRM" : "Vista previa"}</div>
         </div>
       </div>
 
@@ -56,20 +61,20 @@ export default function Sidebar({ currentPage, onNavigate }) {
 
       <div className="sidebar-footer" style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", gap: "8px" }}>
         <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: "500", color: "#fff", flexShrink: 0 }}>
-          {user?.username?.[0]?.toUpperCase() ?? "A"}
+          {isAuthenticated ? (user?.username?.[0]?.toUpperCase() ?? "A") : "D"}
         </div>
         <div style={{ flex: 1, overflow: "hidden" }}>
-          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)", fontWeight: "500", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{user?.username ?? "Admin"}</div>
-          <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)" }}>{user?.role ?? "ADMIN"}</div>
+          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)", fontWeight: "500", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{isAuthenticated ? (user?.username ?? "Admin") : "Demo"}</div>
+          <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)" }}>{isAuthenticated ? (user?.role ?? "ADMIN") : "Solo lectura"}</div>
         </div>
         <button
-          onClick={logout}
+          onClick={isAuthenticated ? logout : goToLogin}
           style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(255,255,255,0.3)", padding: "4px", display: "flex" }}
           onMouseEnter={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.7)"}
           onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.3)"}
-          title="Cerrar sesion"
+          title={isAuthenticated ? "Cerrar sesion" : "Iniciar sesion"}
         >
-          <i className="ti ti-logout" style={{ fontSize: "15px" }} aria-hidden="true" />
+          <i className={`ti ${isAuthenticated ? "ti-logout" : "ti-login"}`} style={{ fontSize: "15px" }} aria-hidden="true" />
         </button>
       </div>
     </nav>
