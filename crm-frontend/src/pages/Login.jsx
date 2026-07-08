@@ -6,7 +6,7 @@ const inputFields = [
     label: "Usuario",
     name: "username",
     type: "text",
-    placeholder: "tu usuario",
+    placeholder: "Tu usuario",
     icon: "ti-user",
     autoComplete: "username",
   },
@@ -14,7 +14,7 @@ const inputFields = [
     label: "Contrasena",
     name: "password",
     type: "password",
-    placeholder: "tu contrasena",
+    placeholder: "Tu contrasena",
     icon: "ti-lock",
     autoComplete: "current-password",
   },
@@ -65,14 +65,14 @@ export default function Login() {
         <div className="login-minimal-brand">
           <div className="login-brand-mark">YC</div>
           <div>
-            <p>YourClients</p>
-            <h1>CRM</h1>
+            <p>CRM privado</p>
+            <h1>YourClients</h1>
           </div>
         </div>
 
         <div className="login-card-heading">
           <h2>Bienvenido</h2>
-          <span>Gestion comercial para clientes, productos y ventas.</span>
+          <span>Gestion comercial simple para clientes, productos y ventas.</span>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
