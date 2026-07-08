@@ -1,6 +1,7 @@
 package com.uade.tpo.demo.controllers.auth;
 
 import com.uade.tpo.demo.entity.dto.AuthResponse;
+import com.uade.tpo.demo.entity.dto.AccessRequestResponse;
 import com.uade.tpo.demo.entity.dto.LoginRequest;
 import com.uade.tpo.demo.entity.dto.RegisterRequest;
 import com.uade.tpo.demo.service.AuthService;
@@ -10,8 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -30,6 +34,29 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Registro deshabilitado.");
         }
         return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/request-access")
+    public ResponseEntity<AccessRequestResponse> requestAccess(@RequestBody @Valid RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.requestAccess(request));
+    }
+
+    @GetMapping("/access-requests")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AccessRequestResponse>> getPendingAccessRequests() {
+        return ResponseEntity.ok(authService.getPendingAccessRequests());
+    }
+
+    @PatchMapping("/access-requests/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AccessRequestResponse> approveAccessRequest(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.approveAccessRequest(id));
+    }
+
+    @PatchMapping("/access-requests/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AccessRequestResponse> rejectAccessRequest(@PathVariable Long id) {
+        return ResponseEntity.ok(authService.rejectAccessRequest(id));
     }
 
     // POST /auth/login

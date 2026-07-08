@@ -6,6 +6,7 @@ const NAV = [
   { icon: "ti-box", label: "Productos", page: "products" },
   { icon: "ti-credit-card", label: "Ventas", page: "sales", section: "Transacciones" },
   { icon: "ti-clock-hour-4", label: "Historial", page: "history" },
+  { icon: "ti-user-shield", label: "Usuarios", page: "users", section: "Administracion", adminOnly: true },
 ];
 
 export default function Sidebar({ currentPage, onNavigate }) {
@@ -27,9 +28,9 @@ export default function Sidebar({ currentPage, onNavigate }) {
       </div>
 
       <div className="sidebar-nav" style={{ flex: 1, overflowY: "auto", padding: "10px 8px" }}>
-        {NAV.map((item, idx) => {
+        {NAV.filter((item) => !item.adminOnly || user?.role === "ADMIN").map((item, idx, items) => {
           const active = currentPage === item.page;
-          const showSection = item.section && NAV[idx - 1]?.section !== item.section;
+          const showSection = item.section && items[idx - 1]?.section !== item.section;
           return (
             <div key={item.page}>
               {showSection && (

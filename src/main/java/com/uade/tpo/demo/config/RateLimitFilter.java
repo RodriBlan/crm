@@ -36,7 +36,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         boolean sensitiveAuthEndpoint = request.getRequestURI().equals("/auth/login")
-                || request.getRequestURI().equals("/auth/register");
+                || request.getRequestURI().equals("/auth/register")
+                || request.getRequestURI().equals("/auth/request-access");
 
         if (!sensitiveAuthEndpoint || !request.getMethod().equals("POST")) {
             filterChain.doFilter(request, response);

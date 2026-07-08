@@ -6,6 +6,7 @@ import Clients from "./pages/Clients";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
 import History from "./pages/History";
+import AccessRequests from "./pages/AccessRequests";
 import NotFound from "./pages/NotFound";
 
 const PAGES = {
@@ -14,6 +15,7 @@ const PAGES = {
   products: Products,
   sales: Sales,
   history: History,
+  users: AccessRequests,
 };
 
 const PATH_TO_PAGE = {
@@ -23,6 +25,7 @@ const PATH_TO_PAGE = {
   products: "products",
   sales: "sales",
   history: "history",
+  users: "users",
 };
 
 function getPathSegment(pathname) {

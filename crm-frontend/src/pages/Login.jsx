@@ -23,11 +23,13 @@ const inputFields = [
 const supportEmail = "rodrigoblanco1000@gmail.com";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, requestAccess } = useAuth();
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
   const [slowServer, setSlowServer] = useState(false);
+  const [mode, setMode] = useState("login");
 
   useEffect(() => {
     if (!loading) {
@@ -49,8 +51,15 @@ export default function Login() {
     setLoading(true);
     setSlowServer(false);
     setError(null);
+    setSuccess(null);
 
     try {
+      if (mode === "request") {
+        await requestAccess(form.username, form.password);
+        setSuccess("Solicitud enviada. Un administrador tiene que aprobar tu cuenta antes de que puedas ingresar.");
+        setForm({ username: "", password: "" });
+        return;
+      }
       await login(form.username, form.password);
     } catch (err) {
       setError(err.message);
@@ -71,8 +80,12 @@ export default function Login() {
         </div>
 
         <div className="login-card-heading">
-          <h2>Bienvenido</h2>
-          <span>Gestion comercial simple para clientes, productos y ventas.</span>
+          <h2>{mode === "login" ? "Bienvenido" : "Solicitar acceso"}</h2>
+          <span>
+            {mode === "login"
+              ? "Gestion comercial simple para clientes, productos y ventas."
+              : "Crea una solicitud. Tu cuenta quedara pendiente hasta que sea aprobada."}
+          </span>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
@@ -80,6 +93,13 @@ export default function Login() {
             <div className="login-error" role="alert">
               <i className="ti ti-alert-circle" aria-hidden="true" />
               <span>{error}</span>
+            </div>
+          )}
+
+          {success && (
+            <div className="login-success" role="status">
+              <i className="ti ti-circle-check" aria-hidden="true" />
+              <span>{success}</span>
             </div>
           )}
 
@@ -109,7 +129,21 @@ export default function Login() {
 
           <button className="login-submit" type="submit" disabled={loading}>
             {loading && <span className="login-spinner" aria-hidden="true" />}
-            {loading ? (slowServer ? "Esperando..." : "Ingresando...") : "Ingresar"}
+            {loading
+              ? (slowServer ? "Esperando..." : (mode === "login" ? "Ingresando..." : "Enviando..."))
+              : (mode === "login" ? "Ingresar" : "Enviar solicitud")}
+          </button>
+
+          <button
+            className="login-mode-switch"
+            type="button"
+            onClick={() => {
+              setMode((current) => current === "login" ? "request" : "login");
+              setError(null);
+              setSuccess(null);
+            }}
+          >
+            {mode === "login" ? "Solicitar acceso" : "Ya tengo cuenta"}
           </button>
         </form>
 

@@ -40,7 +40,14 @@ export function AuthProvider({ children }) {
     }
 
     if (!res.ok) {
-      throw new Error("Usuario o contrasena incorrectos");
+      let message = "Usuario o contrasena incorrectos";
+      try {
+        const data = await res.json();
+        message = data.message ?? message;
+      } catch {
+        // Mantener mensaje generico si el servidor no devuelve JSON.
+      }
+      throw new Error(message);
     }
 
     const data = await res.json();
@@ -54,6 +61,40 @@ export function AuthProvider({ children }) {
     return data;
   }
 
+  async function requestAccess(username, password) {
+    const timeout = createTimeoutSignal(LOGIN_TIMEOUT_MS);
+    let res;
+
+    try {
+      res = await fetch(`${API_URL}/auth/request-access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+        signal: timeout.signal,
+      });
+    } catch (err) {
+      if (err.name === "AbortError") {
+        throw new Error("El servidor esta tardando en responder. Espera unos segundos y volve a intentar.");
+      }
+      throw new Error("No se pudo conectar con el servidor. Revisa tu conexion e intenta de nuevo.");
+    } finally {
+      timeout.clear();
+    }
+
+    if (!res.ok) {
+      let message = "No se pudo enviar la solicitud.";
+      try {
+        const data = await res.json();
+        message = data.message ?? message;
+      } catch {
+        // Mantener mensaje generico si el servidor no devuelve JSON.
+      }
+      throw new Error(message);
+    }
+
+    return res.json();
+  }
+
   function logout() {
     sessionStorage.removeItem("crm_token");
     sessionStorage.removeItem("crm_user");
@@ -63,7 +104,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ token, user, login, requestAccess, logout, isAuthenticated: !!token }}>
       {children}
     </AuthContext.Provider>
   );
