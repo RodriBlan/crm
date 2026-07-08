@@ -513,8 +513,12 @@ tr:hover .row-actions { opacity: 1 !important; }
 
 .login-screen-minimal {
   min-height: 100vh;
+  min-height: 100svh;
   display: grid;
+  grid-template-columns: 1fr;
   place-items: center;
+  justify-content: center;
+  align-content: center;
   padding: 28px;
   background:
     radial-gradient(circle at 18% 18%, rgba(255,255,255,0.95), rgba(255,255,255,0) 28%),
