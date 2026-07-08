@@ -72,7 +72,6 @@ export default function Login() {
     <main className="login-screen login-screen-minimal">
       <section className="login-card login-card-clay" aria-label="Inicio de sesion">
         <div className="login-minimal-brand">
-          <div className="login-brand-mark">YC</div>
           <div>
             <p>CRM privado</p>
             <h1>YourClients</h1>
