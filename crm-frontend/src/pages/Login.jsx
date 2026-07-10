@@ -21,6 +21,7 @@ const inputFields = [
 ];
 
 const supportEmail = "rodrigoblanco1000@gmail.com";
+const MIN_PASSWORD_LENGTH = 6;
 
 export default function Login() {
   const { login, requestAccess } = useAuth();
@@ -45,6 +46,10 @@ export default function Login() {
     e.preventDefault();
     if (!form.username || !form.password) {
       setError("Completa usuario y contrasena.");
+      return;
+    }
+    if (form.password.length < MIN_PASSWORD_LENGTH) {
+      setError(`La contrasena debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`);
       return;
     }
 
@@ -121,6 +126,7 @@ export default function Login() {
                   onChange={(e) => setForm((current) => ({ ...current, [field.name]: e.target.value }))}
                   placeholder={field.placeholder}
                   autoComplete={field.autoComplete}
+                  minLength={field.name === "password" ? MIN_PASSWORD_LENGTH : undefined}
                 />
               </div>
             </label>
