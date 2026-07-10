@@ -23,7 +23,7 @@ const inputFields = [
 const supportEmail = "rodrigoblanco1000@gmail.com";
 const MIN_PASSWORD_LENGTH = 6;
 
-export default function Login() {
+export default function Login({ onViewDemo }) {
   const { login, requestAccess } = useAuth();
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState(null);
@@ -150,6 +150,12 @@ export default function Login() {
           >
             {mode === "login" ? "Solicitar acceso" : "Ya tengo cuenta"}
           </button>
+
+          {mode === "login" && (
+            <button className="login-demo-link" type="button" onClick={onViewDemo}>
+              Ver demo
+            </button>
+          )}
         </form>
 
         <div className="login-minimal-meta">

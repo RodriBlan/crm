@@ -658,6 +658,22 @@ tr:hover .row-actions { opacity: 1 !important; }
   text-decoration: underline;
 }
 
+.login-demo-link {
+  min-height: 40px;
+  border: 1px solid rgba(27,58,107,0.14);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.45);
+  color: #5577A1;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.login-demo-link:hover {
+  color: #1B3A6B;
+  background: rgba(255,255,255,0.72);
+}
+
 .login-minimal-meta {
   margin-top: 22px;
   display: flex;

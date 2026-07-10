@@ -69,10 +69,16 @@ function AuthRequiredDialog({ onClose, onLogin }) {
 function AppRouter() {
   const { isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState(() => getPageFromPath(window.location.pathname));
+  const [previewMode, setPreviewMode] = useState(false);
   const [showAuthRequired, setShowAuthRequired] = useState(false);
 
   useEffect(() => {
-    const onPopState = () => setCurrentPage(getPageFromPath(window.location.pathname));
+    const onPopState = () => {
+      setCurrentPage(getPageFromPath(window.location.pathname));
+      if (getPathSegment(window.location.pathname) === "login") {
+        setPreviewMode(false);
+      }
+    };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
@@ -96,22 +102,30 @@ function AppRouter() {
   };
 
   const goToLogin = () => {
+    setPreviewMode(false);
     setShowAuthRequired(false);
     window.history.pushState(null, "", "/login");
     setCurrentPage(null);
   };
 
-  if (!isAuthenticated && getPathSegment(window.location.pathname) === "login") {
-    return <Login />;
+  const startPreview = () => {
+    setPreviewMode(true);
+    setShowAuthRequired(false);
+    window.history.pushState(null, "", "/dashboard");
+    setCurrentPage("dashboard");
+  };
+
+  if (!isAuthenticated && !previewMode) {
+    return <Login onViewDemo={startPreview} />;
   }
 
   const PageComponent = currentPage && PAGES[currentPage] ? PAGES[currentPage] : NotFound;
 
   return (
     <>
-      {!isAuthenticated && <PreviewBanner onLogin={goToLogin} />}
+      {!isAuthenticated && previewMode && <PreviewBanner onLogin={goToLogin} />}
       <PageComponent currentPage={currentPage ?? "dashboard"} onNavigate={handleNavigate} />
-      {!isAuthenticated && showAuthRequired && (
+      {!isAuthenticated && previewMode && showAuthRequired && (
         <AuthRequiredDialog onClose={() => setShowAuthRequired(false)} onLogin={goToLogin} />
       )}
     </>
