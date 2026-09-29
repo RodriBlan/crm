@@ -54,9 +54,9 @@ function DetailPanel({ client, onClose, onEdit }) {
   if (!client) return null;
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(27,58,107,0.3)", backdropFilter: "blur(3px)" }} onClick={onClose} />
-      <div style={{ position: "relative", background: "#fff", width: "320px", height: "100%", boxShadow: "-4px 0 30px rgba(27,58,107,0.12)", display: "flex", flexDirection: "column", zIndex: 10 }}>
-        <div style={{ background: "#1B3A6B", padding: "22px 20px", flexShrink: 0 }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(23,32,51,0.3)", backdropFilter: "blur(3px)" }} onClick={onClose} />
+      <div style={{ position: "relative", background: "#fff", width: "320px", height: "100%", boxShadow: "-4px 0 30px rgba(23,32,51,0.12)", display: "flex", flexDirection: "column", zIndex: 10 }}>
+        <div style={{ background: "#172033", padding: "22px 20px", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
             <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "6px", cursor: "pointer", color: "rgba(255,255,255,0.7)", padding: "4px 8px", display: "flex" }}>
               <i className="ti ti-x" style={{ fontSize: "16px" }} aria-hidden="true" />
@@ -79,33 +79,33 @@ function DetailPanel({ client, onClose, onEdit }) {
         <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             <div>
-              <div style={{ fontSize: "10px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Contacto</div>
+              <div style={{ fontSize: "10px", fontWeight: "500", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Contacto</div>
               {[
                 { icon: "ti-phone", label: "Teléfono", value: client.phone },
                 { icon: "ti-mail", label: "Email", value: client.email },
                 { icon: "ti-user-plus", label: "Fuente", value: client.source },
                 { icon: "ti-calendar", label: "Registrado", value: client.registrationDate },
               ].map((item) => (
-                <div key={item.label} style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "8px 0", borderBottom: "0.5px solid rgba(27,58,107,0.06)" }}>
-                  <i className={`ti ${item.icon}`} style={{ fontSize: "15px", color: "#6B89B8", marginTop: "1px", flexShrink: 0 }} aria-hidden="true" />
+                <div key={item.label} style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "8px 0", borderBottom: "0.5px solid rgba(23,32,51,0.06)" }}>
+                  <i className={`ti ${item.icon}`} style={{ fontSize: "15px", color: "#64748B", marginTop: "1px", flexShrink: 0 }} aria-hidden="true" />
                   <div>
-                    <div style={{ fontSize: "10px", color: "#6B89B8", marginBottom: "2px" }}>{item.label}</div>
-                    <div style={{ fontSize: "13px", color: "#1B3A6B", fontWeight: "500" }}>{item.value ?? "—"}</div>
+                    <div style={{ fontSize: "10px", color: "#64748B", marginBottom: "2px" }}>{item.label}</div>
+                    <div style={{ fontSize: "13px", color: "#172033", fontWeight: "500" }}>{item.value ?? "—"}</div>
                   </div>
                 </div>
               ))}
             </div>
 
             <div>
-              <div style={{ fontSize: "10px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Observaciones</div>
+              <div style={{ fontSize: "10px", fontWeight: "500", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Observaciones</div>
               {client.notes ? (
                 <div style={{ background: "#FAEEDA", border: "0.5px solid rgba(239,159,39,0.3)", borderRadius: "8px", padding: "12px 14px" }}>
-                  <p style={{ fontSize: "13px", color: "#1B3A6B", lineHeight: "1.6", margin: 0, whiteSpace: "pre-wrap" }}>{client.notes}</p>
+                  <p style={{ fontSize: "13px", color: "#172033", lineHeight: "1.6", margin: 0, whiteSpace: "pre-wrap" }}>{client.notes}</p>
                 </div>
               ) : (
-                <div style={{ background: "#F0F4FA", borderRadius: "8px", padding: "20px", textAlign: "center" }}>
-                  <i className="ti ti-notes" style={{ fontSize: "26px", color: "#B5CDE8", display: "block", marginBottom: "6px" }} aria-hidden="true" />
-                  <span style={{ fontSize: "12px", color: "#6B89B8" }}>Sin observaciones</span>
+                <div style={{ background: "#F4F6F9", borderRadius: "8px", padding: "20px", textAlign: "center" }}>
+                  <i className="ti ti-notes" style={{ fontSize: "26px", color: "#D5DCE6", display: "block", marginBottom: "6px" }} aria-hidden="true" />
+                  <span style={{ fontSize: "12px", color: "#64748B" }}>Sin observaciones</span>
                 </div>
               )}
             </div>
@@ -178,9 +178,9 @@ export default function Clients({ currentPage, onNavigate }) {
   }
 
   const kpis = [
-    { label: "Total", value: clients.length, icon: "ti-users", bg: "#DCE8F8", color: "#1B3A6B" },
+    { label: "Total", value: clients.length, icon: "ti-users", bg: "#E8EFFF", color: "#172033" },
     { label: "Activos", value: activeCount, icon: "ti-user-check", bg: "#E1F5EE", color: "#0F6E56" },
-    { label: "Inactivos", value: clients.length - activeCount, icon: "ti-user-off", bg: "#F0F4FA", color: "#6B89B8" },
+    { label: "Inactivos", value: clients.length - activeCount, icon: "ti-user-off", bg: "#F4F6F9", color: "#64748B" },
     { label: "% Activos", value: clients.length ? Math.round((activeCount / clients.length) * 100) + "%" : "—", icon: "ti-chart-pie", bg: "#FAEEDA", color: "#854F0B" },
   ];
 
@@ -192,21 +192,21 @@ export default function Clients({ currentPage, onNavigate }) {
           <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nuevo Cliente
         </button>
       }>
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div>
-          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", margin: 0 }}>Clientes</h1>
-          <p style={{ fontSize: "13px", color: "#6B89B8", marginTop: "4px" }}>Gestioná tu base de clientes</p>
+      <div className="page-stack">
+        <div className="page-heading">
+          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#172033", margin: 0 }}>Clientes</h1>
+          <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Gestioná tu base de clientes</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" }}>
+        <div className="compact-metric-grid compact-metric-grid-four">
           {kpis.map((k) => (
-            <div key={k.label} style={{ ...S.card, padding: "14px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "34px", height: "34px", borderRadius: "10px", background: k.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div className="compact-metric" key={k.label}>
+              <div className="compact-metric-icon" style={{ background: k.bg }}>
                 <i className={`ti ${k.icon}`} style={{ fontSize: "16px", color: k.color }} aria-hidden="true" />
               </div>
               <div>
-                <div style={{ fontSize: "10px", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "500" }}>{k.label}</div>
-                <div style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", marginTop: "2px" }}>{loading ? "—" : k.value}</div>
+                <span className="compact-metric-label">{k.label}</span>
+                <strong className="compact-metric-value">{loading ? "-" : k.value}</strong>
               </div>
             </div>
           ))}
@@ -227,31 +227,31 @@ export default function Clients({ currentPage, onNavigate }) {
               <tbody>
                 {loading ? <SkeletonRows cols={7} rows={6} /> :
                   paginated.length === 0 ? (
-                    <tr><td colSpan={7} style={{ ...S.td, textAlign: "center", color: "#6B89B8", padding: "40px" }}>
+                    <tr><td colSpan={7} style={{ ...S.td, textAlign: "center", color: "#64748B", padding: "40px" }}>
                       {search ? "Sin resultados." : "No hay clientes aún."}
                     </td></tr>
                   ) : paginated.map((client) => (
                     <tr key={client.id} style={{ cursor: "pointer" }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
                       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                       onClick={() => setDetail(client)}>
                       <td style={S.td}>
                         <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
                           <Avatar name={client.name} size={28} fontSize={10} />
-                          <span style={{ fontSize: "13px", fontWeight: "500", color: "#1B3A6B" }}>{client.name}</span>
+                          <span style={{ fontSize: "13px", fontWeight: "500", color: "#172033" }}>{client.name}</span>
                         </div>
                       </td>
-                      <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px", color: "#6B89B8" }}>{client.phone ?? "—"}</td>
-                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8" }}>{client.email ?? "—"}</td>
-                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8" }}>{client.source ?? "—"}</td>
+                      <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px", color: "#64748B" }}>{client.phone ?? "—"}</td>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#64748B" }}>{client.email ?? "—"}</td>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#64748B" }}>{client.source ?? "—"}</td>
                       <td style={{ ...S.td, maxWidth: "160px" }}>
                         {client.notes
-                          ? <span style={{ fontSize: "12px", color: "#6B89B8", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={client.notes}>{client.notes}</span>
-                          : <span style={{ fontSize: "12px", color: "#DCE8F8" }}>—</span>}
+                          ? <span style={{ fontSize: "12px", color: "#64748B", display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={client.notes}>{client.notes}</span>
+                          : <span style={{ fontSize: "12px", color: "#E8EFFF" }}>—</span>}
                       </td>
                       <td style={S.td}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: client.active ? "#E1F5EE" : "#F0F4FA", color: client.active ? "#0F6E56" : "#6B89B8" }}>
-                          <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: client.active ? "#1D9E75" : "#B5CDE8", display: "inline-block" }} />
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: client.active ? "#E1F5EE" : "#F4F6F9", color: client.active ? "#0F6E56" : "#64748B" }}>
+                          <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: client.active ? "#1D9E75" : "#D5DCE6", display: "inline-block" }} />
                           {client.active ? "Activo" : "Inactivo"}
                         </span>
                       </td>
@@ -263,9 +263,9 @@ export default function Clients({ currentPage, onNavigate }) {
                             { icon: "ti-trash", action: () => handleDelete(client.id), title: "Eliminar" },
                           ].map((btn) => (
                             <button key={btn.icon} onClick={btn.action} title={btn.title}
-                              style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = "#F0F4FA"; e.currentTarget.style.color = "#1B3A6B"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#6B89B8"; }}>
+                              style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "#F4F6F9"; e.currentTarget.style.color = "#172033"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
                               <i className={`ti ${btn.icon}`} style={{ fontSize: "15px" }} aria-hidden="true" />
                             </button>
                           ))}
@@ -276,8 +276,8 @@ export default function Clients({ currentPage, onNavigate }) {
               </tbody>
             </table>
           </div>
-          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(27,58,107,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "12px", color: "#6B89B8" }}>{loading ? "Cargando..." : `${filtered.length} clientes`}</span>
+          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(23,32,51,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: "12px", color: "#64748B" }}>{loading ? "Cargando..." : `${filtered.length} clientes`}</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>

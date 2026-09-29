@@ -4,7 +4,7 @@ export default function NotFound({ currentPage, onNavigate }) {
   return (
     <Layout currentPage={currentPage} onNavigate={onNavigate}>
       <div style={{ padding: "60px 40px", textAlign: "center" }}>
-        <div style={{ fontSize: "96px", fontWeight: 700, color: "#1B3A6B" }}>404</div>
+        <div style={{ fontSize: "96px", fontWeight: 700, color: "#172033" }}>404</div>
         <div style={{ fontSize: "24px", fontWeight: 600, marginTop: "16px", color: "#2A3A5A" }}>
           Página no encontrada
         </div>
@@ -18,7 +18,7 @@ export default function NotFound({ currentPage, onNavigate }) {
             border: "none",
             borderRadius: "12px",
             padding: "12px 24px",
-            background: "#1B3A6B",
+            background: "#172033",
             color: "#fff",
             cursor: "pointer",
             fontWeight: 600,

@@ -1,151 +1,169 @@
-// ── Paleta azul marino ──────────────────────────────────────────────────────
 export const BLUE = {
-  900: "#0F2347",
-  800: "#1B3A6B",  // color principal
-  700: "#2A5298",
-  600: "#378ADD",
-  400: "#6B89B8",
-  200: "#B5CDE8",
-  100: "#DCE8F8",
-  50:  "#F0F4FA",  // fondo contenido
+  900: "#0F1B2D",
+  800: "#172033",
+  700: "#2B456B",
+  600: "#2563EB",
+  400: "#64748B",
+  200: "#D5DCE6",
+  100: "#E8EFFF",
+  50: "#F4F6F9",
 };
 
-// ── Colores semánticos ───────────────────────────────────────────────────────
 export const STATUS = {
-  COMPLETED: { bg: "#E1F5EE", color: "#0F6E56", dot: "#1D9E75", label: "Completada" },
-  PENDING:   { bg: "#DCE8F8", color: "#1B3A6B", dot: "#378ADD", label: "Pendiente" },
-  CANCELLED: { bg: "#FCEBEB", color: "#A32D2D", dot: "#E24B4A", label: "Cancelada" },
+  COMPLETED: { bg: "#E3F3EC", color: "#17624F", dot: "#218A6E", label: "Completada" },
+  PENDING: { bg: "#EEF0E8", color: "#626B43", dot: "#8A9658", label: "Pendiente" },
+  CANCELLED: { bg: "#FBEAEA", color: "#9B3838", dot: "#C94A4A", label: "Cancelada" },
 };
 
-// ── Estilos compartidos ──────────────────────────────────────────────────────
 export const S = {
   card: {
-    background: "#fff",
-    border: "0.5px solid rgba(27,58,107,0.1)",
-    borderRadius: "12px",
+    background: "#FFFFFF",
+    border: "1px solid #E1E6EE",
+    borderRadius: "8px",
     overflow: "hidden",
+    boxShadow: "0 1px 2px rgba(15, 27, 45, 0.035)",
   },
   th: {
-    padding: "9px 14px",
+    padding: "11px 16px",
     fontSize: "10px",
-    fontWeight: "500",
-    color: "#6B89B8",
+    fontWeight: "700",
+    color: "#718096",
     textTransform: "uppercase",
-    letterSpacing: "0.06em",
-    background: "#F0F4FA",
-    borderBottom: "0.5px solid rgba(27,58,107,0.08)",
+    letterSpacing: "0.07em",
+    background: "#F8FAFC",
+    borderBottom: "1px solid #E1E6EE",
     textAlign: "left",
     whiteSpace: "nowrap",
   },
   td: {
-    padding: "10px 14px",
+    padding: "12px 16px",
     fontSize: "13px",
-    color: "#1B3A6B",
-    borderBottom: "0.5px solid rgba(27,58,107,0.06)",
+    color: "#334155",
+    borderBottom: "1px solid #EDF0F4",
   },
   input: {
-    border: "0.5px solid rgba(27,58,107,0.15)",
-    borderRadius: "8px",
-    padding: "8px 12px",
+    border: "1px solid #D9E0E9",
+    borderRadius: "7px",
+    padding: "10px 12px",
     fontSize: "13px",
-    color: "#1B3A6B",
-    background: "#fff",
+    color: "#172033",
+    background: "#FFFFFF",
     outline: "none",
     width: "100%",
   },
   btnPrimary: {
-    background: "#1B3A6B",
-    color: "#fff",
-    border: "none",
-    borderRadius: "20px",
-    padding: "8px 16px",
+    background: "#2563EB",
+    color: "#FFFFFF",
+    border: "1px solid #2563EB",
+    borderRadius: "7px",
+    minHeight: "38px",
+    padding: "8px 14px",
     fontSize: "12px",
-    fontWeight: "500",
+    fontWeight: "700",
     display: "flex",
     alignItems: "center",
-    gap: "6px",
+    justifyContent: "center",
+    gap: "7px",
     cursor: "pointer",
   },
   btnSecondary: {
-    background: "#fff",
-    color: "#1B3A6B",
-    border: "0.5px solid rgba(27,58,107,0.2)",
-    borderRadius: "20px",
-    padding: "8px 16px",
+    background: "#FFFFFF",
+    color: "#334155",
+    border: "1px solid #D9E0E9",
+    borderRadius: "7px",
+    minHeight: "38px",
+    padding: "8px 14px",
     fontSize: "12px",
-    fontWeight: "500",
+    fontWeight: "700",
     display: "flex",
     alignItems: "center",
-    gap: "6px",
+    justifyContent: "center",
+    gap: "7px",
     cursor: "pointer",
   },
   btnWarning: {
-    background: "#FAEEDA",
-    color: "#854F0B",
-    border: "0.5px solid #EF9F27",
-    borderRadius: "20px",
-    padding: "8px 16px",
+    background: "#FFF7E7",
+    color: "#7A5316",
+    border: "1px solid #EACB91",
+    borderRadius: "7px",
+    minHeight: "38px",
+    padding: "8px 14px",
     fontSize: "12px",
-    fontWeight: "500",
+    fontWeight: "700",
     display: "flex",
     alignItems: "center",
-    gap: "6px",
+    justifyContent: "center",
+    gap: "7px",
     cursor: "pointer",
   },
 };
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
 export function getInitials(name = "") {
-  return name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
+  return name.split(" ").slice(0, 2).map((word) => word[0]?.toUpperCase() ?? "").join("");
 }
 
-export function fmtMoney(n) {
-  if (n == null) return "—";
-  if (n >= 1000000) return "$" + (n / 1000000).toFixed(1) + "M";
-  if (n >= 1000) return "$" + (n / 1000).toFixed(1) + "k";
-  return "$" + Number(n).toFixed(2);
+export function fmtMoney(number) {
+  if (number == null) return "-";
+  return "$" + Number(number).toLocaleString("es-AR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
-export function fmtNum(n) {
-  return n == null ? "—" : Number(n).toLocaleString("es-AR");
+export function fmtNum(number) {
+  return number == null ? "-" : Number(number).toLocaleString("es-AR");
 }
 
-// ── Componentes compartidos ──────────────────────────────────────────────────
 export function Avatar({ name, size = 28, fontSize = 10 }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: "#DCE8F8", color: "#1B3A6B", display: "flex", alignItems: "center", justifyContent: "center", fontSize, fontWeight: "500", flexShrink: 0 }}>
+    <div className="ui-avatar" style={{ width: size, height: size, fontSize }}>
       {getInitials(name)}
     </div>
   );
 }
 
 export function StatusBadge({ status }) {
-  const s = STATUS[status] ?? STATUS.PENDING;
+  const statusStyle = STATUS[status] ?? STATUS.PENDING;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "3px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: s.bg, color: s.color }}>
-      <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: s.dot, display: "inline-block" }} />
-      {s.label}
+    <span
+      className="status-badge"
+      style={{ background: statusStyle.bg, color: statusStyle.color }}
+      data-status={status}
+    >
+      <span style={{ background: statusStyle.dot }} aria-hidden="true" />
+      {statusStyle.label}
     </span>
   );
 }
 
 export function Pagination({ page, totalPages, onPage }) {
   if (totalPages <= 1) return null;
+
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-      <button onClick={() => onPage(Math.max(1, page - 1))} disabled={page === 1}
-        style={{ width: "28px", height: "28px", borderRadius: "8px", border: "0.5px solid rgba(27,58,107,0.15)", background: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: page === 1 ? 0.4 : 1, color: "#1B3A6B" }}>
-        <i className="ti ti-chevron-left" style={{ fontSize: "14px" }} aria-hidden="true" />
+    <div className="pagination" aria-label="Paginación">
+      <button
+        onClick={() => onPage(Math.max(1, page - 1))}
+        disabled={page === 1}
+        aria-label="Página anterior"
+      >
+        <i className="ti ti-chevron-left" aria-hidden="true" />
       </button>
-      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((p) => (
-        <button key={p} onClick={() => onPage(p)}
-          style={{ width: "28px", height: "28px", borderRadius: "8px", border: p === page ? "none" : "0.5px solid rgba(27,58,107,0.15)", background: p === page ? "#1B3A6B" : "none", color: p === page ? "#fff" : "#1B3A6B", fontSize: "12px", fontWeight: "500", cursor: "pointer" }}>
-          {p}
+      {Array.from({ length: Math.min(totalPages, 5) }, (_, index) => index + 1).map((pageNumber) => (
+        <button
+          key={pageNumber}
+          className={pageNumber === page ? "is-current" : ""}
+          onClick={() => onPage(pageNumber)}
+          aria-current={pageNumber === page ? "page" : undefined}
+        >
+          {pageNumber}
         </button>
       ))}
-      <button onClick={() => onPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}
-        style={{ width: "28px", height: "28px", borderRadius: "8px", border: "0.5px solid rgba(27,58,107,0.15)", background: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: page === totalPages ? 0.4 : 1, color: "#1B3A6B" }}>
-        <i className="ti ti-chevron-right" style={{ fontSize: "14px" }} aria-hidden="true" />
+      <button
+        onClick={() => onPage(Math.min(totalPages, page + 1))}
+        disabled={page === totalPages}
+        aria-label="Página siguiente"
+      >
+        <i className="ti ti-chevron-right" aria-hidden="true" />
       </button>
     </div>
   );
@@ -153,20 +171,20 @@ export function Pagination({ page, totalPages, onPage }) {
 
 export function ErrorBanner({ message, onRetry }) {
   return (
-    <div style={{ background: "#FCEBEB", border: "0.5px solid rgba(163,45,45,0.2)", borderRadius: "10px", padding: "12px 16px", display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "#A32D2D" }}>
-      <i className="ti ti-alert-circle" style={{ fontSize: "16px", flexShrink: 0 }} aria-hidden="true" />
-      <span style={{ flex: 1 }}>{message}</span>
-      {onRetry && <button onClick={onRetry} style={{ background: "none", border: "none", color: "#A32D2D", cursor: "pointer", textDecoration: "underline", fontSize: "12px" }}>Reintentar</button>}
+    <div className="error-banner" role="alert">
+      <i className="ti ti-alert-circle" aria-hidden="true" />
+      <span>{message}</span>
+      {onRetry && <button onClick={onRetry}>Reintentar</button>}
     </div>
   );
 }
 
 export function SkeletonRows({ cols = 5, rows = 5 }) {
-  return Array.from({ length: rows }).map((_, i) => (
-    <tr key={i}>
-      {Array.from({ length: cols }).map((_, j) => (
-        <td key={j} style={{ padding: "10px 14px" }}>
-          <div style={{ height: "13px", background: "#EEF2F8", borderRadius: "4px", width: j === 0 ? "140px" : "80px" }} />
+  return Array.from({ length: rows }).map((_, rowIndex) => (
+    <tr key={rowIndex} className="skeleton-row">
+      {Array.from({ length: cols }).map((__, columnIndex) => (
+        <td key={columnIndex}>
+          <div className={columnIndex === 0 ? "skeleton-line is-wide" : "skeleton-line"} />
         </td>
       ))}
     </tr>
@@ -175,26 +193,26 @@ export function SkeletonRows({ cols = 5, rows = 5 }) {
 
 export function Modal({ title, onClose, children, footer }) {
   return (
-    <div className="app-modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(27,58,107,0.35)", backdropFilter: "blur(4px)" }}>
-      <div className="app-modal" style={{ background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "460px", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(27,58,107,0.15)" }}>
-        <div className="app-modal-header" style={{ padding: "18px 22px", borderBottom: "0.5px solid rgba(27,58,107,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <span style={{ fontSize: "15px", fontWeight: "500", color: "#1B3A6B" }}>{title}</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", display: "flex", alignItems: "center", padding: "2px" }}>
-            <i className="ti ti-x" style={{ fontSize: "18px" }} aria-hidden="true" />
+    <div className="app-modal-backdrop" role="presentation">
+      <section className="app-modal" role="dialog" aria-modal="true" aria-label={title}>
+        <header className="app-modal-header">
+          <h2>{title}</h2>
+          <button onClick={onClose} aria-label="Cerrar">
+            <i className="ti ti-x" aria-hidden="true" />
           </button>
-        </div>
-        <div className="app-modal-body" style={{ padding: "20px 22px", overflowY: "auto", flex: 1 }}>{children}</div>
-        {footer && <div className="app-modal-footer" style={{ padding: "14px 22px", borderTop: "0.5px solid rgba(27,58,107,0.1)", display: "flex", justifyContent: "flex-end", gap: "8px", flexShrink: 0 }}>{footer}</div>}
-      </div>
+        </header>
+        <div className="app-modal-body">{children}</div>
+        {footer && <footer className="app-modal-footer">{footer}</footer>}
+      </section>
     </div>
   );
 }
 
 export function FormField({ label, children }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <label style={{ fontSize: "11px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</label>
+    <label className="form-field">
+      <span>{label}</span>
       {children}
-    </div>
+    </label>
   );
 }

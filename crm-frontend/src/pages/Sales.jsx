@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
-import { S, Avatar, StatusBadge, SkeletonRows, Pagination, ErrorBanner, Modal, FormField, fmtMoney } from "../components/ui";
+import { S, Avatar, StatusBadge, SkeletonRows, Pagination, ErrorBanner, FormField, fmtMoney } from "../components/ui";
 
 function SaleDetailPanel({ sale, onClose }) {
   if (!sale) return null;
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(27,58,107,0.3)", backdropFilter: "blur(3px)" }} onClick={onClose} />
-      <div style={{ position: "relative", background: "#fff", width: "320px", height: "100%", boxShadow: "-4px 0 30px rgba(27,58,107,0.12)", display: "flex", flexDirection: "column", zIndex: 10 }}>
-        <div style={{ background: "#1B3A6B", padding: "22px 20px", flexShrink: 0 }}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(23,32,51,0.3)", backdropFilter: "blur(3px)" }} onClick={onClose} />
+      <div style={{ position: "relative", background: "#fff", width: "320px", height: "100%", boxShadow: "-4px 0 30px rgba(23,32,51,0.12)", display: "flex", flexDirection: "column", zIndex: 10 }}>
+        <div style={{ background: "#172033", padding: "22px 20px", flexShrink: 0 }}>
           <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
             <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "6px", cursor: "pointer", color: "rgba(255,255,255,0.7)", padding: "4px 8px", display: "flex" }}>
               <i className="ti ti-x" style={{ fontSize: "16px" }} aria-hidden="true" />
@@ -22,24 +22,24 @@ function SaleDetailPanel({ sale, onClose }) {
         <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <StatusBadge status={sale.status} />
-            <span style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", fontFamily: "monospace" }}>{fmtMoney(sale.total)}</span>
+            <span style={{ fontSize: "20px", fontWeight: "500", color: "#172033", fontFamily: "monospace" }}>{fmtMoney(sale.total)}</span>
           </div>
           {sale.notes && (
             <div style={{ background: "#FAEEDA", border: "0.5px solid rgba(239,159,39,0.3)", borderRadius: "8px", padding: "12px 14px" }}>
-              <div style={{ fontSize: "10px", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Notas</div>
-              <p style={{ fontSize: "13px", color: "#1B3A6B", margin: 0 }}>{sale.notes}</p>
+              <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Notas</div>
+              <p style={{ fontSize: "13px", color: "#172033", margin: 0 }}>{sale.notes}</p>
             </div>
           )}
           <div>
-            <div style={{ fontSize: "10px", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Items</div>
+            <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Items</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {sale.items?.map((item) => (
-                <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F0F4FA", borderRadius: "8px", padding: "10px 12px" }}>
+                <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F4F6F9", borderRadius: "8px", padding: "10px 12px" }}>
                   <div>
-                    <div style={{ fontSize: "13px", fontWeight: "500", color: "#1B3A6B" }}>{item.productName}</div>
-                    <div style={{ fontSize: "11px", color: "#6B89B8", marginTop: "2px" }}>{item.quantity} × ${Number(item.unitPrice).toFixed(2)}</div>
+                    <div style={{ fontSize: "13px", fontWeight: "500", color: "#172033" }}>{item.productName}</div>
+                    <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>{item.quantity} × ${Number(item.unitPrice).toFixed(2)}</div>
                   </div>
-                  <span style={{ fontSize: "13px", fontFamily: "monospace", fontWeight: "500", color: "#1B3A6B" }}>${Number(item.subtotal).toFixed(2)}</span>
+                  <span style={{ fontSize: "13px", fontFamily: "monospace", fontWeight: "500", color: "#172033" }}>${Number(item.subtotal).toFixed(2)}</span>
                 </div>
               ))}
             </div>
@@ -142,11 +142,11 @@ export function NewSaleModal({ onClose, onSave }) {
   }
 
   return (
-    <div className="app-modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(27,58,107,0.35)", backdropFilter: "blur(4px)" }}>
-      <div className="app-modal app-modal-wide" style={{ background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "560px", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(27,58,107,0.15)" }}>
-        <div className="app-modal-header" style={{ padding: "18px 22px", borderBottom: "0.5px solid rgba(27,58,107,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <span style={{ fontSize: "15px", fontWeight: "500", color: "#1B3A6B" }}>Registrar Nueva Venta</span>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8" }}>
+    <div className="app-modal-backdrop" style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(23,32,51,0.35)", backdropFilter: "blur(4px)" }}>
+      <div className="app-modal app-modal-wide" style={{ background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "560px", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(23,32,51,0.15)" }}>
+        <div className="app-modal-header" style={{ padding: "18px 22px", borderBottom: "0.5px solid rgba(23,32,51,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <span style={{ fontSize: "15px", fontWeight: "500", color: "#172033" }}>Registrar Nueva Venta</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B" }}>
             <i className="ti ti-x" style={{ fontSize: "18px" }} aria-hidden="true" />
           </button>
         </div>
@@ -163,16 +163,16 @@ export function NewSaleModal({ onClose, onSave }) {
             <input type="text" placeholder="Buscar cliente..." value={clientSearch}
               onChange={(e) => { setClientSearch(e.target.value); setClientId(""); }} style={S.input} />
             {clientSearch && !clientId && (
-              <div style={{ border: "0.5px solid rgba(27,58,107,0.12)", borderRadius: "8px", maxHeight: "160px", overflowY: "auto", background: "#fff", boxShadow: "0 4px 12px rgba(27,58,107,0.08)" }}>
+              <div style={{ border: "0.5px solid rgba(23,32,51,0.12)", borderRadius: "8px", maxHeight: "160px", overflowY: "auto", background: "#fff", boxShadow: "0 4px 12px rgba(23,32,51,0.08)" }}>
                 {filteredClients.length === 0
-                  ? <p style={{ padding: "10px 12px", fontSize: "13px", color: "#6B89B8" }}>Sin resultados</p>
+                  ? <p style={{ padding: "10px 12px", fontSize: "13px", color: "#64748B" }}>Sin resultados</p>
                   : filteredClients.map((c) => (
                     <button key={c.id} onClick={() => { setClientId(c.id); setClientSearch(c.name); }}
-                      style={{ width: "100%", textAlign: "left", padding: "9px 12px", background: "none", border: "none", borderBottom: "0.5px solid rgba(27,58,107,0.06)", cursor: "pointer", fontSize: "13px", color: "#1B3A6B", display: "flex", alignItems: "center", gap: "8px" }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                      style={{ width: "100%", textAlign: "left", padding: "9px 12px", background: "none", border: "none", borderBottom: "0.5px solid rgba(23,32,51,0.06)", cursor: "pointer", fontSize: "13px", color: "#172033", display: "flex", alignItems: "center", gap: "8px" }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
                       onMouseLeave={(e) => e.currentTarget.style.background = "none"}>
                       <Avatar name={c.name} size={22} fontSize={8} />
-                      {c.name} <span style={{ color: "#6B89B8", fontSize: "11px" }}>{c.phone}</span>
+                      {c.name} <span style={{ color: "#64748B", fontSize: "11px" }}>{c.phone}</span>
                     </button>
                   ))}
               </div>
@@ -184,10 +184,10 @@ export function NewSaleModal({ onClose, onSave }) {
             )}
           </FormField>
 
-          <div style={{ borderTop: "0.5px solid rgba(27,58,107,0.08)", paddingTop: "16px" }}>
+          <div style={{ borderTop: "0.5px solid rgba(23,32,51,0.08)", paddingTop: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-              <span style={{ fontSize: "11px", fontWeight: "500", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>Productos *</span>
-              <button onClick={addItem} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "#378ADD", display: "flex", alignItems: "center", gap: "4px" }}>
+              <span style={{ fontSize: "11px", fontWeight: "500", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em" }}>Productos *</span>
+              <button onClick={addItem} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "#2563EB", display: "flex", alignItems: "center", gap: "4px" }}>
                 <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Agregar item
               </button>
             </div>
@@ -199,12 +199,12 @@ export function NewSaleModal({ onClose, onSave }) {
                 const filtered = filteredProducts(i);
 
                 return (
-                  <div key={i} style={{ background: stockWarning ? "#FCEBEB" : "#F0F4FA", border: `0.5px solid ${stockWarning ? "rgba(163,45,45,0.2)" : "rgba(27,58,107,0.08)"}`, borderRadius: "10px", padding: "12px" }}>
+                  <div key={i} style={{ background: stockWarning ? "#FCEBEB" : "#F4F6F9", border: `0.5px solid ${stockWarning ? "rgba(163,45,45,0.2)" : "rgba(23,32,51,0.08)"}`, borderRadius: "10px", padding: "12px" }}>
                     <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
                       {/* Buscador de producto — campo de texto con dropdown */}
                       <div style={{ flex: 1, position: "relative" }}>
                         <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                          <i className="ti ti-search" style={{ position: "absolute", left: "10px", fontSize: "13px", color: "#6B89B8", pointerEvents: "none" }} aria-hidden="true" />
+                          <i className="ti ti-search" style={{ position: "absolute", left: "10px", fontSize: "13px", color: "#64748B", pointerEvents: "none" }} aria-hidden="true" />
                           <input
                             type="text"
                             value={productSearches[i] ?? ""}
@@ -220,17 +220,17 @@ export function NewSaleModal({ onClose, onSave }) {
 
                         {/* Dropdown de sugerencias */}
                         {productSearches[i] && !item.productId && filtered.length > 0 && (
-                          <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "#fff", border: "0.5px solid rgba(27,58,107,0.12)", borderRadius: "8px", boxShadow: "0 4px 16px rgba(27,58,107,0.1)", maxHeight: "160px", overflowY: "auto", zIndex: 10 }}>
+                          <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "#fff", border: "0.5px solid rgba(23,32,51,0.12)", borderRadius: "8px", boxShadow: "0 4px 16px rgba(23,32,51,0.1)", maxHeight: "160px", overflowY: "auto", zIndex: 10 }}>
                             {filtered.map((p) => (
                               <button key={p.id} onClick={() => selectProduct(i, p)}
-                                style={{ width: "100%", textAlign: "left", padding: "9px 12px", background: "none", border: "none", borderBottom: "0.5px solid rgba(27,58,107,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                                style={{ width: "100%", textAlign: "left", padding: "9px 12px", background: "none", border: "none", borderBottom: "0.5px solid rgba(23,32,51,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
                                 onMouseLeave={(e) => e.currentTarget.style.background = "none"}>
                                 <div>
-                                  <div style={{ fontSize: "13px", color: "#1B3A6B", fontWeight: "500" }}>{p.name}</div>
-                                  <div style={{ fontSize: "11px", color: "#6B89B8", marginTop: "1px" }}>${Number(p.price).toFixed(2)} · stock: {p.stock}</div>
+                                  <div style={{ fontSize: "13px", color: "#172033", fontWeight: "500" }}>{p.name}</div>
+                                  <div style={{ fontSize: "11px", color: "#64748B", marginTop: "1px" }}>${Number(p.price).toFixed(2)} · stock: {p.stock}</div>
                                 </div>
-                                <span style={{ fontSize: "12px", color: "#378ADD", fontWeight: "500" }}>${Number(p.price).toFixed(2)}</span>
+                                <span style={{ fontSize: "12px", color: "#2563EB", fontWeight: "500" }}>${Number(p.price).toFixed(2)}</span>
                               </button>
                             ))}
                           </div>
@@ -238,7 +238,7 @@ export function NewSaleModal({ onClose, onSave }) {
 
                         {/* Info del producto seleccionado */}
                         {selectedProduct && (
-                          <div style={{ fontSize: "11px", color: "#6B89B8", marginTop: "4px", display: "flex", gap: "8px" }}>
+                          <div style={{ fontSize: "11px", color: "#64748B", marginTop: "4px", display: "flex", gap: "8px" }}>
                             <span>${Number(selectedProduct.price).toFixed(2)} c/u</span>
                             <span>·</span>
                             <span>Stock: {selectedProduct.stock}</span>
@@ -255,9 +255,9 @@ export function NewSaleModal({ onClose, onSave }) {
                       {/* Eliminar item */}
                       {items.length > 1 && (
                         <button onClick={() => removeItem(i)}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", padding: "8px 4px", display: "flex", flexShrink: 0 }}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "8px 4px", display: "flex", flexShrink: 0 }}
                           onMouseEnter={(e) => e.currentTarget.style.color = "#A32D2D"}
-                          onMouseLeave={(e) => e.currentTarget.style.color = "#6B89B8"}>
+                          onMouseLeave={(e) => e.currentTarget.style.color = "#64748B"}>
                           <i className="ti ti-trash" style={{ fontSize: "15px" }} aria-hidden="true" />
                         </button>
                       )}
@@ -283,13 +283,13 @@ export function NewSaleModal({ onClose, onSave }) {
           </FormField>
 
           {/* Total */}
-          <div style={{ background: "#F0F4FA", border: "0.5px solid rgba(27,58,107,0.1)", borderRadius: "10px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "12px", color: "#6B89B8", fontWeight: "500" }}>Total estimado</span>
-            <span style={{ fontSize: "22px", fontWeight: "600", color: "#1B3A6B" }}>${calcTotal().toFixed(2)}</span>
+          <div style={{ background: "#F4F6F9", border: "0.5px solid rgba(23,32,51,0.1)", borderRadius: "10px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "12px", color: "#64748B", fontWeight: "500" }}>Total estimado</span>
+            <span style={{ fontSize: "22px", fontWeight: "600", color: "#172033" }}>${calcTotal().toFixed(2)}</span>
           </div>
         </div>
 
-        <div className="app-modal-footer" style={{ padding: "14px 22px", borderTop: "0.5px solid rgba(27,58,107,0.1)", display: "flex", justifyContent: "flex-end", gap: "8px", flexShrink: 0 }}>
+        <div className="app-modal-footer" style={{ padding: "14px 22px", borderTop: "0.5px solid rgba(23,32,51,0.1)", display: "flex", justifyContent: "flex-end", gap: "8px", flexShrink: 0 }}>
           <button style={S.btnSecondary} onClick={onClose}>Cancelar</button>
           <button style={S.btnWarning} onClick={() => handleSubmit("PENDING")} disabled={loading}>
             <i className="ti ti-clock" style={{ fontSize: "14px" }} aria-hidden="true" /> Dejar Pendiente
@@ -371,19 +371,19 @@ export default function Sales({ currentPage, onNavigate }) {
           <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nueva Venta
         </button>
       }>
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+      <div className="page-stack">
+        <div className="page-heading page-heading-with-metrics">
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", margin: 0 }}>Ventas</h1>
-            <p style={{ fontSize: "13px", color: "#6B89B8", marginTop: "4px" }}>Gestioná y monitoreá tus transacciones</p>
+            <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#172033", margin: 0 }}>Ventas</h1>
+            <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Gestioná y monitoreá tus transacciones</p>
           </div>
-          <div style={{ display: "flex", gap: "10px" }}>
+          <div className="page-inline-metrics">
             {[
-              { label: "Volumen total", value: fmtMoney(totalVolume), color: "#1B3A6B" },
-              { label: "Pendientes", value: pending, color: "#378ADD" },
+              { label: "Volumen total", value: fmtMoney(totalVolume), color: "#172033" },
+              { label: "Pendientes", value: pending, color: "#2563EB" },
             ].map((k) => (
-              <div key={k.label} style={{ ...S.card, padding: "10px 16px", textAlign: "center" }}>
-                <div style={{ fontSize: "10px", color: "#6B89B8", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "500" }}>{k.label}</div>
+              <div className="page-inline-metric" key={k.label}>
+                <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "500" }}>{k.label}</div>
                 <div style={{ fontSize: "18px", fontWeight: "500", color: k.color, marginTop: "4px" }}>{k.value}</div>
               </div>
             ))}
@@ -391,9 +391,9 @@ export default function Sales({ currentPage, onNavigate }) {
         </div>
 
         <div style={{ ...S.card, padding: "12px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <i className="ti ti-filter" style={{ fontSize: "15px", color: "#6B89B8" }} aria-hidden="true" />
+          <i className="ti ti-filter" style={{ fontSize: "15px", color: "#64748B" }} aria-hidden="true" />
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ ...S.input, width: "auto", appearance: "none", border: "none", background: "none", padding: "0", fontSize: "13px", color: "#1B3A6B", cursor: "pointer" }}>
+            style={{ ...S.input, width: "auto", appearance: "none", border: "none", background: "none", padding: "0", fontSize: "13px", color: "#172033", cursor: "pointer" }}>
             <option value="ALL">Todos los estados</option>
             <option value="COMPLETED">Completadas</option>
             <option value="PENDING">Pendientes</option>
@@ -416,14 +416,14 @@ export default function Sales({ currentPage, onNavigate }) {
               <tbody>
                 {loading ? <SkeletonRows cols={6} rows={6} /> :
                   paginated.length === 0 ? (
-                    <tr><td colSpan={6} style={{ ...S.td, textAlign: "center", color: "#6B89B8", padding: "40px" }}>No hay ventas que mostrar.</td></tr>
+                    <tr><td colSpan={6} style={{ ...S.td, textAlign: "center", color: "#64748B", padding: "40px" }}>No hay ventas que mostrar.</td></tr>
                   ) : paginated.map((sale) => (
                     <tr key={sale.id} style={{ cursor: "pointer" }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
                       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                       onClick={() => setDetail(sale)}>
-                      <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px", color: "#6B89B8" }}>#{sale.id}</td>
-                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8", whiteSpace: "nowrap" }}>{new Date(sale.date).toLocaleDateString("es-AR")}</td>
+                      <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px", color: "#64748B" }}>#{sale.id}</td>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#64748B", whiteSpace: "nowrap" }}>{new Date(sale.date).toLocaleDateString("es-AR")}</td>
                       <td style={S.td}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                           <Avatar name={sale.clientName} size={26} fontSize={9} />
@@ -436,24 +436,24 @@ export default function Sales({ currentPage, onNavigate }) {
                         <div className="row-actions" style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "2px", opacity: 0, transition: "opacity 0.15s" }}>
                           {sale.status === "PENDING" && (
                             <button onClick={() => handleStatusChange(sale.id, "COMPLETED")} title="Completar"
-                              style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
+                              style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
                               onMouseEnter={(e) => { e.currentTarget.style.background = "#E1F5EE"; e.currentTarget.style.color = "#0F6E56"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#6B89B8"; }}>
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
                               <i className="ti ti-circle-check" style={{ fontSize: "15px" }} aria-hidden="true" />
                             </button>
                           )}
                           {sale.status !== "CANCELLED" && (
                             <button onClick={() => handleStatusChange(sale.id, "CANCELLED")} title="Cancelar"
-                              style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
+                              style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
                               onMouseEnter={(e) => { e.currentTarget.style.background = "#FAEEDA"; e.currentTarget.style.color = "#854F0B"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#6B89B8"; }}>
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
                               <i className="ti ti-ban" style={{ fontSize: "15px" }} aria-hidden="true" />
                             </button>
                           )}
                           <button onClick={() => handleDelete(sale.id)} title="Eliminar"
-                            style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
                             onMouseEnter={(e) => { e.currentTarget.style.background = "#FCEBEB"; e.currentTarget.style.color = "#A32D2D"; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#6B89B8"; }}>
+                            onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
                             <i className="ti ti-trash" style={{ fontSize: "15px" }} aria-hidden="true" />
                           </button>
                         </div>
@@ -463,8 +463,8 @@ export default function Sales({ currentPage, onNavigate }) {
               </tbody>
             </table>
           </div>
-          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(27,58,107,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "12px", color: "#6B89B8" }}>{filtered.length} ventas</span>
+          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(23,32,51,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: "12px", color: "#64748B" }}>{filtered.length} ventas</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>

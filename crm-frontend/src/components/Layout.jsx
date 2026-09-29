@@ -1,46 +1,46 @@
 import Sidebar from "./Sidebar";
 
-export default function Layout({ currentPage, onNavigate, searchPlaceholder, onSearch, searchValue, showSearch = true, headerRight, children }) {
+export default function Layout({
+  currentPage,
+  onNavigate,
+  searchPlaceholder,
+  onSearch,
+  searchValue,
+  showSearch = true,
+  headerRight,
+  children,
+}) {
   return (
-    <div className="app-shell" style={{ display: "flex", minHeight: "100vh", background: "#F0F4FA", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="app-shell">
       <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
 
-      <main className="app-main" style={{ flex: 1, marginLeft: "200px", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        <header className="app-topbar" style={{ background: "#fff", borderBottom: "0.5px solid rgba(27,58,107,0.1)", padding: "0 20px", height: "52px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 40 }}>
+      <main className="app-main">
+        <header className="app-topbar">
           {showSearch ? (
-            <div className="app-search" style={{ display: "flex", alignItems: "center", gap: "8px", background: "#F0F4FA", border: "0.5px solid rgba(27,58,107,0.1)", borderRadius: "20px", padding: "7px 14px", width: "220px" }}>
-              <i className="ti ti-search" style={{ fontSize: "14px", color: "#6B89B8" }} aria-hidden="true" />
+            <label className="app-search">
+              <span className="sr-only">{searchPlaceholder ?? "Buscar"}</span>
+              <i className="ti ti-search" aria-hidden="true" />
               <input
-                type="text"
+                type="search"
                 placeholder={searchPlaceholder ?? "Buscar..."}
                 value={searchValue ?? ""}
-                onChange={(e) => onSearch?.(e.target.value)}
-                style={{ background: "none", border: "none", outline: "none", fontSize: "12px", color: "#1B3A6B", width: "100%" }}
+                onChange={(event) => onSearch?.(event.target.value)}
               />
-            </div>
+            </label>
           ) : (
-            <div />
+            <div className="topbar-context" aria-label="Espacio de trabajo actual">
+              <span>Espacio de trabajo</span>
+              <strong>Gestión comercial</strong>
+            </div>
           )}
 
-          <div className="app-header-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            {headerRight}
-          </div>
+          <div className="app-header-actions">{headerRight}</div>
         </header>
 
-        <div className="app-content" style={{ flex: 1, padding: "24px", overflowY: "auto" }}>
-          <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
-            {children}
-          </div>
+        <div className="app-content">
+          <div className="content-container">{children}</div>
         </div>
       </main>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        tr:hover .row-actions { opacity: 1 !important; }
-        input::placeholder { color: #6B89B8; }
-        textarea::placeholder { color: #6B89B8; }
-        select:focus, input:focus, textarea:focus { border-color: #378ADD !important; box-shadow: 0 0 0 3px rgba(55,138,221,0.1) !important; }
-      `}</style>
     </div>
   );
 }

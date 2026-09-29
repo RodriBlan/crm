@@ -25,3 +25,7 @@ dist-ssr
 
 .vercel
 .npm-cache/
+
+# Local visual checks
+.tmp-playwright/
+design-*.png

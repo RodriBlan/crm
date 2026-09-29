@@ -11,10 +11,10 @@ const inputFields = [
     autoComplete: "username",
   },
   {
-    label: "Contrasena",
+    label: "Contraseña",
     name: "password",
     type: "password",
-    placeholder: "Tu contrasena",
+    placeholder: "Tu contraseña",
     icon: "ti-lock",
     autoComplete: "current-password",
   },
@@ -42,14 +42,14 @@ export default function Login({ onViewDemo }) {
     return () => window.clearTimeout(timeoutId);
   }, [loading]);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(event) {
+    event.preventDefault();
     if (!form.username || !form.password) {
-      setError("Completa usuario y contrasena.");
+      setError("Completá usuario y contraseña.");
       return;
     }
     if (form.password.length < MIN_PASSWORD_LENGTH) {
-      setError(`La contrasena debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`);
+      setError(`La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres.`);
       return;
     }
 
@@ -61,110 +61,125 @@ export default function Login({ onViewDemo }) {
     try {
       if (mode === "request") {
         await requestAccess(form.username, form.password);
-        setSuccess("Solicitud enviada. Un administrador tiene que aprobar tu cuenta antes de que puedas ingresar.");
+        setSuccess("Solicitud enviada. Un administrador debe aprobar la cuenta antes del primer ingreso.");
         setForm({ username: "", password: "" });
         return;
       }
       await login(form.username, form.password);
-    } catch (err) {
-      setError(err.message);
+    } catch (requestError) {
+      setError(requestError.message);
     } finally {
       setLoading(false);
     }
   }
 
+  function toggleMode() {
+    setMode((current) => current === "login" ? "request" : "login");
+    setError(null);
+    setSuccess(null);
+  }
+
   return (
-    <main className="login-screen login-screen-minimal">
-      <section className="login-card login-card-clay" aria-label="Inicio de sesion">
-        <div className="login-minimal-brand">
-          <div>
-            <p>CRM privado</p>
-            <h1>YourClients</h1>
+    <main className="login-screen-professional">
+      <section className="login-auth-shell" aria-label="Acceso a YourClients">
+        <aside className="login-context">
+          <div className="login-context-brand">
+            <span aria-hidden="true"><i className="ti ti-address-book" /></span>
+            <div>
+              <strong>YourClients</strong>
+              <small>Gestión comercial</small>
+            </div>
           </div>
-        </div>
 
-        <div className="login-card-heading">
-          <h2>{mode === "login" ? "Bienvenido" : "Solicitar acceso"}</h2>
-          <span>
-            {mode === "login"
-              ? "Gestion comercial simple para clientes, productos y ventas."
-              : "Crea una solicitud. Tu cuenta quedara pendiente hasta que sea aprobada."}
-          </span>
-        </div>
+          <div className="login-context-copy">
+            <p>Espacio de trabajo privado</p>
+            <h1>Tu operación comercial, en orden.</h1>
+            <span>Accedé a la información de clientes, productos y ventas desde un único lugar.</span>
+          </div>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          {error && (
-            <div className="login-error" role="alert">
-              <i className="ti ti-alert-circle" aria-hidden="true" />
-              <span>{error}</span>
-            </div>
-          )}
+          <div className="login-context-status">
+            <span><i className="ti ti-lock" aria-hidden="true" /> Acceso autorizado</span>
+            <span><i className="ti ti-database" aria-hidden="true" /> Datos protegidos</span>
+          </div>
+        </aside>
 
-          {success && (
-            <div className="login-success" role="status">
-              <i className="ti ti-circle-check" aria-hidden="true" />
-              <span>{success}</span>
-            </div>
-          )}
+        <div className="login-form-panel">
+          <div className="login-form-heading">
+            <span>{mode === "login" ? "Acceso" : "Alta de usuario"}</span>
+            <h2>{mode === "login" ? "Iniciar sesión" : "Solicitar acceso"}</h2>
+            <p>
+              {mode === "login"
+                ? "Ingresá con las credenciales autorizadas para este espacio."
+                : "La cuenta quedará pendiente hasta que un administrador la apruebe."}
+            </p>
+          </div>
 
-          {slowServer && !error && (
-            <div className="login-status" role="status">
-              <i className="ti ti-clock-hour-4" aria-hidden="true" />
-              <span>El servidor puede estar despertando. Esto puede tardar unos segundos.</span>
-            </div>
-          )}
-
-          {inputFields.map((field) => (
-            <label className="login-field" key={field.name}>
-              <span>{field.label}</span>
-              <div>
-                <i className={`ti ${field.icon}`} aria-hidden="true" />
-                <input
-                  type={field.type}
-                  name={field.name}
-                  value={form[field.name]}
-                  onChange={(e) => setForm((current) => ({ ...current, [field.name]: e.target.value }))}
-                  placeholder={field.placeholder}
-                  autoComplete={field.autoComplete}
-                  minLength={field.name === "password" ? MIN_PASSWORD_LENGTH : undefined}
-                />
+          <form onSubmit={handleSubmit} className="login-form">
+            {error && (
+              <div className="login-error" role="alert">
+                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <span>{error}</span>
               </div>
-            </label>
-          ))}
+            )}
 
-          <button className="login-submit" type="submit" disabled={loading}>
-            {loading && <span className="login-spinner" aria-hidden="true" />}
-            {loading
-              ? (slowServer ? "Esperando..." : (mode === "login" ? "Ingresando..." : "Enviando..."))
-              : (mode === "login" ? "Ingresar" : "Enviar solicitud")}
-          </button>
+            {success && (
+              <div className="login-success" role="status">
+                <i className="ti ti-circle-check" aria-hidden="true" />
+                <span>{success}</span>
+              </div>
+            )}
 
-          <button
-            className="login-mode-switch"
-            type="button"
-            onClick={() => {
-              setMode((current) => current === "login" ? "request" : "login");
-              setError(null);
-              setSuccess(null);
-            }}
-          >
-            {mode === "login" ? "Solicitar acceso" : "Ya tengo cuenta"}
-          </button>
+            {slowServer && !error && (
+              <div className="login-status" role="status">
+                <i className="ti ti-clock-hour-4" aria-hidden="true" />
+                <span>El servidor se está iniciando. El acceso puede tardar unos segundos.</span>
+              </div>
+            )}
 
-          {mode === "login" && (
-            <button className="login-demo-link" type="button" onClick={onViewDemo}>
-              Ver demo
+            {inputFields.map((field) => (
+              <label className="login-field" key={field.name}>
+                <span>{field.label}</span>
+                <div>
+                  <i className={`ti ${field.icon}`} aria-hidden="true" />
+                  <input
+                    type={field.type}
+                    name={field.name}
+                    value={form[field.name]}
+                    onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}
+                    placeholder={field.placeholder}
+                    autoComplete={field.autoComplete}
+                    minLength={field.name === "password" ? MIN_PASSWORD_LENGTH : undefined}
+                  />
+                </div>
+              </label>
+            ))}
+
+            <button className="login-submit" type="submit" disabled={loading}>
+              {loading && <span className="login-spinner" aria-hidden="true" />}
+              {loading
+                ? (slowServer ? "Conectando..." : (mode === "login" ? "Ingresando..." : "Enviando..."))
+                : (mode === "login" ? "Ingresar" : "Enviar solicitud")}
             </button>
-          )}
-        </form>
 
-        <div className="login-minimal-meta">
-          <span>Vista privada. No solicita pagos ni datos bancarios.</span>
-          <nav aria-label="Informacion legal y de seguridad">
-            <a href="/privacy.html">Privacidad</a>
-            <a href="/security.html">Seguridad</a>
-            <a href={`mailto:${supportEmail}`}>Contacto</a>
-          </nav>
+            <button className="login-mode-switch" type="button" onClick={toggleMode}>
+              {mode === "login" ? "Solicitar una cuenta" : "Volver al inicio de sesión"}
+            </button>
+
+            {mode === "login" && (
+              <button className="login-demo-link" type="button" onClick={onViewDemo}>
+                <i className="ti ti-eye" aria-hidden="true" />
+                Explorar demostración
+              </button>
+            )}
+          </form>
+
+          <footer className="login-form-footer">
+            <span>Soporte: <a href={`mailto:${supportEmail}`}>{supportEmail}</a></span>
+            <nav aria-label="Información legal y de seguridad">
+              <a href="/privacy.html">Privacidad</a>
+              <a href="/security.html">Seguridad</a>
+            </nav>
+          </footer>
         </div>
       </section>
     </main>

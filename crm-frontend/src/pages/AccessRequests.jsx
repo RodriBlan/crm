@@ -47,10 +47,10 @@ export default function AccessRequests({ currentPage, onNavigate }) {
 
   return (
     <Layout currentPage={currentPage} onNavigate={onNavigate} showSearch={false}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-        <div>
-          <h1 style={{ fontSize: "20px", fontWeight: "600", color: "#1B3A6B", margin: 0 }}>Usuarios</h1>
-          <p style={{ fontSize: "13px", color: "#6B89B8", marginTop: "4px" }}>Aproba o rechaza solicitudes de acceso a YourClients.</p>
+      <div className="page-stack">
+        <div className="page-heading">
+          <h1 style={{ fontSize: "20px", fontWeight: "600", color: "#172033", margin: 0 }}>Usuarios</h1>
+          <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Aproba o rechaza solicitudes de acceso a YourClients.</p>
         </div>
 
         {!isAdmin && (
@@ -60,10 +60,10 @@ export default function AccessRequests({ currentPage, onNavigate }) {
         {error && <ErrorBanner message={error} onRetry={fetchRequests} />}
 
         <div style={S.card}>
-          <div style={{ padding: "16px 18px", borderBottom: "0.5px solid rgba(27,58,107,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+          <div style={{ padding: "16px 18px", borderBottom: "0.5px solid rgba(23,32,51,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: "650", color: "#1B3A6B" }}>Solicitudes pendientes</div>
-              <div style={{ fontSize: "12px", color: "#6B89B8", marginTop: "3px" }}>{requests.length} pendientes</div>
+              <div style={{ fontSize: "14px", fontWeight: "650", color: "#172033" }}>Solicitudes pendientes</div>
+              <div style={{ fontSize: "12px", color: "#64748B", marginTop: "3px" }}>{requests.length} pendientes</div>
             </div>
             <button style={S.btnSecondary} onClick={fetchRequests} disabled={loading}>
               <i className="ti ti-refresh" aria-hidden="true" /> Actualizar
@@ -71,9 +71,9 @@ export default function AccessRequests({ currentPage, onNavigate }) {
           </div>
 
           {loading ? (
-            <div style={{ padding: "28px", color: "#6B89B8", fontSize: "13px" }}>Cargando solicitudes...</div>
+            <div style={{ padding: "28px", color: "#64748B", fontSize: "13px" }}>Cargando solicitudes...</div>
           ) : requests.length === 0 ? (
-            <div style={{ padding: "34px", textAlign: "center", color: "#6B89B8", fontSize: "13px" }}>
+            <div style={{ padding: "34px", textAlign: "center", color: "#64748B", fontSize: "13px" }}>
               No hay solicitudes pendientes.
             </div>
           ) : (

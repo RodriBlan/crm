@@ -47,13 +47,13 @@ function CategoryManager({ onClose }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "240px", overflowY: "auto" }}>
           {categories.length === 0 ? (
-            <p style={{ fontSize: "13px", color: "#6B89B8", textAlign: "center", padding: "20px 0" }}>No hay categorías aún.</p>
+            <p style={{ fontSize: "13px", color: "#64748B", textAlign: "center", padding: "20px 0" }}>No hay categorías aún.</p>
           ) : categories.map((cat) => (
-            <div key={cat.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F0F4FA", border: "0.5px solid rgba(27,58,107,0.08)", borderRadius: "8px", padding: "9px 12px" }}>
-              <span style={{ fontSize: "13px", color: "#1B3A6B", fontWeight: "500" }}>{cat.description}</span>
-              <button onClick={() => handleDelete(cat.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", display: "flex", padding: "2px" }}
+            <div key={cat.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F4F6F9", border: "0.5px solid rgba(23,32,51,0.08)", borderRadius: "8px", padding: "9px 12px" }}>
+              <span style={{ fontSize: "13px", color: "#172033", fontWeight: "500" }}>{cat.description}</span>
+              <button onClick={() => handleDelete(cat.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", display: "flex", padding: "2px" }}
                 onMouseEnter={(e) => e.currentTarget.style.color = "#A32D2D"}
-                onMouseLeave={(e) => e.currentTarget.style.color = "#6B89B8"}>
+                onMouseLeave={(e) => e.currentTarget.style.color = "#64748B"}>
                 <i className="ti ti-trash" style={{ fontSize: "15px" }} aria-hidden="true" />
               </button>
             </div>
@@ -162,7 +162,7 @@ export default function Products({ currentPage, onNavigate }) {
   }
 
   function StockIndicator({ stock }) {
-    if (stock == null) return <span style={{ color: "#6B89B8", fontSize: "12px" }}>—</span>;
+    if (stock == null) return <span style={{ color: "#64748B", fontSize: "12px" }}>—</span>;
     const color = stock === 0 ? "#A32D2D" : stock <= 5 ? "#854F0B" : "#0F6E56";
     const bg = stock === 0 ? "#FCEBEB" : stock <= 5 ? "#FAEEDA" : "#E1F5EE";
     return (
@@ -186,10 +186,10 @@ export default function Products({ currentPage, onNavigate }) {
           </button>
         </div>
       }>
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div>
-          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#1B3A6B", margin: 0 }}>Productos</h1>
-          <p style={{ fontSize: "13px", color: "#6B89B8", marginTop: "4px" }}>Gestioná tu catálogo, precios y stock</p>
+      <div className="page-stack">
+        <div className="page-heading">
+          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#172033", margin: 0 }}>Productos</h1>
+          <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Gestioná tu catálogo, precios y stock</p>
         </div>
 
         {error && <ErrorBanner message={error} onRetry={fetchProducts} />}
@@ -207,23 +207,23 @@ export default function Products({ currentPage, onNavigate }) {
               <tbody>
                 {loading ? <SkeletonRows cols={7} rows={6} /> :
                   paginated.length === 0 ? (
-                    <tr><td colSpan={7} style={{ ...S.td, textAlign: "center", color: "#6B89B8", padding: "40px" }}>{search ? "Sin resultados." : "No hay productos aún."}</td></tr>
+                    <tr><td colSpan={7} style={{ ...S.td, textAlign: "center", color: "#64748B", padding: "40px" }}>{search ? "Sin resultados." : "No hay productos aún."}</td></tr>
                   ) : paginated.map((p) => (
                     <tr key={p.id}
-                      onMouseEnter={(e) => e.currentTarget.style.background = "#F0F4FA"}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
                       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
                       <td style={{ ...S.td, fontWeight: "500" }}>{p.name}</td>
-                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8", maxWidth: "200px" }}>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#64748B", maxWidth: "200px" }}>
                         <span style={{ display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.description ?? "—"}</span>
                       </td>
                       <td style={S.td}>
                         {p.categoryDescription
-                          ? <span style={{ padding: "2px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: "#DCE8F8", color: "#1B3A6B" }}>{p.categoryDescription}</span>
-                          : <span style={{ color: "#B5CDE8", fontSize: "12px" }}>—</span>}
+                          ? <span style={{ padding: "2px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: "#E8EFFF", color: "#172033" }}>{p.categoryDescription}</span>
+                          : <span style={{ color: "#D5DCE6", fontSize: "12px" }}>—</span>}
                       </td>
                       <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px" }}>${Number(p.price).toFixed(2)}</td>
                       <td style={S.td}><StockIndicator stock={p.stock} /></td>
-                      <td style={{ ...S.td, fontSize: "12px", color: "#6B89B8" }}>{p.descuento > 0 ? `${p.descuento}%` : "—"}</td>
+                      <td style={{ ...S.td, fontSize: "12px", color: "#64748B" }}>{p.descuento > 0 ? `${p.descuento}%` : "—"}</td>
                       <td style={{ ...S.td, textAlign: "center" }}>
                         <div className="row-actions" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "2px", opacity: 0, transition: "opacity 0.15s" }}>
                           {[
@@ -231,9 +231,9 @@ export default function Products({ currentPage, onNavigate }) {
                             { icon: "ti-trash", action: () => handleDelete(p.id), title: "Eliminar" },
                           ].map((btn) => (
                             <button key={btn.icon} onClick={btn.action} title={btn.title}
-                              style={{ background: "none", border: "none", cursor: "pointer", color: "#6B89B8", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = "#F0F4FA"; e.currentTarget.style.color = "#1B3A6B"; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#6B89B8"; }}>
+                              style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
+                              onMouseEnter={(e) => { e.currentTarget.style.background = "#F4F6F9"; e.currentTarget.style.color = "#172033"; }}
+                              onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
                               <i className={`ti ${btn.icon}`} style={{ fontSize: "15px" }} aria-hidden="true" />
                             </button>
                           ))}
@@ -244,8 +244,8 @@ export default function Products({ currentPage, onNavigate }) {
               </tbody>
             </table>
           </div>
-          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(27,58,107,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: "12px", color: "#6B89B8" }}>{loading ? "Cargando..." : `${filtered.length} productos`}</span>
+          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(23,32,51,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: "12px", color: "#64748B" }}>{loading ? "Cargando..." : `${filtered.length} productos`}</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>
