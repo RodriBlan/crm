@@ -1,32 +1,19 @@
 import Layout from "../components/Layout";
+import { Button, EmptyState, PageHeader } from "../components/ui";
 
 export default function NotFound({ currentPage, onNavigate }) {
   return (
-    <Layout currentPage={currentPage} onNavigate={onNavigate}>
-      <div style={{ padding: "60px 40px", textAlign: "center" }}>
-        <div style={{ fontSize: "96px", fontWeight: 700, color: "#172033" }}>404</div>
-        <div style={{ fontSize: "24px", fontWeight: 600, marginTop: "16px", color: "#2A3A5A" }}>
-          Página no encontrada
+    <Layout currentPage={currentPage} onNavigate={onNavigate} showSearch={false}>
+      <div className="page-stack">
+        <PageHeader eyebrow="Navegación" title="Página no encontrada" description="La dirección solicitada no corresponde a una sección disponible." />
+        <div className="not-found-panel">
+          <EmptyState
+            icon="ti-route-off"
+            title="No encontramos esa página"
+            description="Podés volver al resumen y continuar trabajando desde allí."
+            action={<Button icon="ti-arrow-left" onClick={() => onNavigate("dashboard")}>Volver al resumen</Button>}
+          />
         </div>
-        <div style={{ fontSize: "16px", color: "#5B6B8A", marginTop: "12px", maxWidth: "560px", marginLeft: "auto", marginRight: "auto" }}>
-          La ruta que estás buscando no existe o ya no está disponible.
-        </div>
-        <button
-          onClick={() => onNavigate("dashboard")}
-          style={{
-            marginTop: "30px",
-            border: "none",
-            borderRadius: "12px",
-            padding: "12px 24px",
-            background: "#172033",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: "14px",
-          }}
-        >
-          Volver al inicio
-        </button>
       </div>
     </Layout>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
+import Icon from "../components/Icon";
 
 const inputFields = [
   {
@@ -84,7 +85,7 @@ export default function Login({ onViewDemo }) {
       <section className="login-auth-shell" aria-label="Acceso a YourClients">
         <aside className="login-context">
           <div className="login-context-brand">
-            <span aria-hidden="true"><i className="ti ti-address-book" /></span>
+            <span aria-hidden="true"><Icon name="address-book" size={22} /></span>
             <div>
               <strong>YourClients</strong>
               <small>Gestión comercial</small>
@@ -98,8 +99,8 @@ export default function Login({ onViewDemo }) {
           </div>
 
           <div className="login-context-status">
-            <span><i className="ti ti-lock" aria-hidden="true" /> Acceso autorizado</span>
-            <span><i className="ti ti-database" aria-hidden="true" /> Datos protegidos</span>
+            <span><Icon name="lock" size={15} /> Acceso autorizado</span>
+            <span><Icon name="database" size={15} /> Datos protegidos</span>
           </div>
         </aside>
 
@@ -117,21 +118,21 @@ export default function Login({ onViewDemo }) {
           <form onSubmit={handleSubmit} className="login-form">
             {error && (
               <div className="login-error" role="alert">
-                <i className="ti ti-alert-circle" aria-hidden="true" />
+                <Icon name="alert-circle" size={17} />
                 <span>{error}</span>
               </div>
             )}
 
             {success && (
               <div className="login-success" role="status">
-                <i className="ti ti-circle-check" aria-hidden="true" />
+                <Icon name="circle-check" size={17} />
                 <span>{success}</span>
               </div>
             )}
 
             {slowServer && !error && (
               <div className="login-status" role="status">
-                <i className="ti ti-clock-hour-4" aria-hidden="true" />
+                <Icon name="clock" size={17} />
                 <span>El servidor se está iniciando. El acceso puede tardar unos segundos.</span>
               </div>
             )}
@@ -140,7 +141,7 @@ export default function Login({ onViewDemo }) {
               <label className="login-field" key={field.name}>
                 <span>{field.label}</span>
                 <div>
-                  <i className={`ti ${field.icon}`} aria-hidden="true" />
+                  <Icon name={field.icon} size={17} />
                   <input
                     type={field.type}
                     name={field.name}
@@ -167,7 +168,7 @@ export default function Login({ onViewDemo }) {
 
             {mode === "login" && (
               <button className="login-demo-link" type="button" onClick={onViewDemo}>
-                <i className="ti ti-eye" aria-hidden="true" />
+                <Icon name="eye" size={17} />
                 Explorar demostración
               </button>
             )}

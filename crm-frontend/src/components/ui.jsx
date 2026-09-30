@@ -11,91 +11,19 @@ export const BLUE = {
 
 export const STATUS = {
   COMPLETED: { bg: "#E3F3EC", color: "#17624F", dot: "#218A6E", label: "Completada" },
-  PENDING: { bg: "#EEF0E8", color: "#626B43", dot: "#8A9658", label: "Pendiente" },
+  PENDING: { bg: "#FFF4D8", color: "#7A5316", dot: "#C98A20", label: "Pendiente" },
   CANCELLED: { bg: "#FBEAEA", color: "#9B3838", dot: "#C94A4A", label: "Cancelada" },
 };
 
+// Existing forms still consume these objects; visual rules live in the shared stylesheet.
 export const S = {
-  card: {
-    background: "#FFFFFF",
-    border: "1px solid #E1E6EE",
-    borderRadius: "8px",
-    overflow: "hidden",
-    boxShadow: "0 1px 2px rgba(15, 27, 45, 0.035)",
-  },
-  th: {
-    padding: "11px 16px",
-    fontSize: "10px",
-    fontWeight: "700",
-    color: "#718096",
-    textTransform: "uppercase",
-    letterSpacing: "0.07em",
-    background: "#F8FAFC",
-    borderBottom: "1px solid #E1E6EE",
-    textAlign: "left",
-    whiteSpace: "nowrap",
-  },
-  td: {
-    padding: "12px 16px",
-    fontSize: "13px",
-    color: "#334155",
-    borderBottom: "1px solid #EDF0F4",
-  },
-  input: {
-    border: "1px solid #D9E0E9",
-    borderRadius: "7px",
-    padding: "10px 12px",
-    fontSize: "13px",
-    color: "#172033",
-    background: "#FFFFFF",
-    outline: "none",
-    width: "100%",
-  },
-  btnPrimary: {
-    background: "#2563EB",
-    color: "#FFFFFF",
-    border: "1px solid #2563EB",
-    borderRadius: "7px",
-    minHeight: "38px",
-    padding: "8px 14px",
-    fontSize: "12px",
-    fontWeight: "700",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "7px",
-    cursor: "pointer",
-  },
-  btnSecondary: {
-    background: "#FFFFFF",
-    color: "#334155",
-    border: "1px solid #D9E0E9",
-    borderRadius: "7px",
-    minHeight: "38px",
-    padding: "8px 14px",
-    fontSize: "12px",
-    fontWeight: "700",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "7px",
-    cursor: "pointer",
-  },
-  btnWarning: {
-    background: "#FFF7E7",
-    color: "#7A5316",
-    border: "1px solid #EACB91",
-    borderRadius: "7px",
-    minHeight: "38px",
-    padding: "8px 14px",
-    fontSize: "12px",
-    fontWeight: "700",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "7px",
-    cursor: "pointer",
-  },
+  card: { background: "#FFFFFF", border: "1px solid #E1E6EE", borderRadius: "8px", overflow: "hidden" },
+  th: { padding: "11px 16px", fontSize: "10px", fontWeight: "700", color: "#718096", textTransform: "uppercase", letterSpacing: "0.07em", background: "#F8FAFC", borderBottom: "1px solid #E1E6EE", textAlign: "left", whiteSpace: "nowrap" },
+  td: { padding: "12px 16px", fontSize: "13px", color: "#334155", borderBottom: "1px solid #EDF0F4" },
+  input: { border: "1px solid #D9E0E9", borderRadius: "7px", padding: "10px 12px", fontSize: "13px", color: "#172033", background: "#FFFFFF", outline: "none", width: "100%" },
+  btnPrimary: { background: "#2563EB", color: "#FFFFFF", border: "1px solid #2563EB", borderRadius: "7px", minHeight: "38px", padding: "8px 14px", fontSize: "12px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", cursor: "pointer" },
+  btnSecondary: { background: "#FFFFFF", color: "#334155", border: "1px solid #D9E0E9", borderRadius: "7px", minHeight: "38px", padding: "8px 14px", fontSize: "12px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", cursor: "pointer" },
+  btnWarning: { background: "#FFF7E7", color: "#7A5316", border: "1px solid #EACB91", borderRadius: "7px", minHeight: "38px", padding: "8px 14px", fontSize: "12px", fontWeight: "700", display: "flex", alignItems: "center", justifyContent: "center", gap: "7px", cursor: "pointer" },
 };
 
 export function getInitials(name = "") {
@@ -104,115 +32,127 @@ export function getInitials(name = "") {
 
 export function fmtMoney(number) {
   if (number == null) return "-";
-  return "$" + Number(number).toLocaleString("es-AR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return "$" + Number(number).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function fmtNum(number) {
   return number == null ? "-" : Number(number).toLocaleString("es-AR");
 }
 
-export function Avatar({ name, size = 28, fontSize = 10 }) {
+export function Button({ variant = "primary", icon, className = "", children, ...props }) {
   return (
-    <div className="ui-avatar" style={{ width: size, height: size, fontSize }}>
-      {getInitials(name)}
-    </div>
+    <button className={`ui-button ui-button-${variant} ${className}`.trim()} {...props}>
+      {icon && <Icon name={icon} />}
+      <span>{children}</span>
+    </button>
   );
+}
+
+export function IconButton({ icon, label, className = "", ...props }) {
+  return (
+    <button className={`ui-icon-button ${className}`.trim()} aria-label={label} title={label} {...props}>
+      <Icon name={icon} />
+    </button>
+  );
+}
+
+export function PageHeader({ eyebrow, title, description, actions, meta }) {
+  return (
+    <header className="ui-page-header">
+      <div className="ui-page-header-copy">
+        {eyebrow && <span className="ui-eyebrow">{eyebrow}</span>}
+        <div className="ui-page-title-line"><h1>{title}</h1>{meta && <span className="ui-page-meta">{meta}</span>}</div>
+        {description && <p>{description}</p>}
+      </div>
+      {actions && <div className="ui-page-actions">{actions}</div>}
+    </header>
+  );
+}
+
+export function Avatar({ name, size = 28, fontSize = 10 }) {
+  return <div className="ui-avatar" style={{ width: size, height: size, fontSize }}>{getInitials(name)}</div>;
 }
 
 export function StatusBadge({ status }) {
   const statusStyle = STATUS[status] ?? STATUS.PENDING;
   return (
-    <span
-      className="status-badge"
-      style={{ background: statusStyle.bg, color: statusStyle.color }}
-      data-status={status}
-    >
-      <span style={{ background: statusStyle.dot }} aria-hidden="true" />
-      {statusStyle.label}
+    <span className="status-badge" style={{ background: statusStyle.bg, color: statusStyle.color }} data-status={status}>
+      <span style={{ background: statusStyle.dot }} aria-hidden="true" />{statusStyle.label}
     </span>
+  );
+}
+
+export function Metric({ label, value, icon, tone = "blue", detail }) {
+  return (
+    <article className={`ui-metric ui-metric-${tone}`}>
+      <div className="ui-metric-icon"><Icon name={icon} /></div>
+      <div className="ui-metric-copy"><span>{label}</span><strong>{value}</strong>{detail && <small>{detail}</small>}</div>
+    </article>
+  );
+}
+
+export function DataPanel({ title, description, action, children, footer, className = "" }) {
+  return (
+    <section className={`ui-data-panel ${className}`.trim()}>
+      {(title || action) && <header className="ui-data-panel-header"><div>{title && <h2>{title}</h2>}{description && <p>{description}</p>}</div>{action && <div className="ui-data-panel-action">{action}</div>}</header>}
+      <div className="ui-data-panel-body">{children}</div>
+      {footer && <footer className="ui-data-panel-footer">{footer}</footer>}
+    </section>
+  );
+}
+
+export function EmptyState({ icon = "ti-inbox", title, description, action, compact = false }) {
+  return (
+    <div className={`ui-empty-state${compact ? " is-compact" : ""}`}>
+      <div className="ui-empty-icon"><Icon name={icon} /></div>
+      <strong>{title}</strong>{description && <p>{description}</p>}{action && <div>{action}</div>}
+    </div>
   );
 }
 
 export function Pagination({ page, totalPages, onPage }) {
   if (totalPages <= 1) return null;
-
   return (
-    <div className="pagination" aria-label="Paginación">
-      <button
-        onClick={() => onPage(Math.max(1, page - 1))}
-        disabled={page === 1}
-        aria-label="Página anterior"
-      >
-        <i className="ti ti-chevron-left" aria-hidden="true" />
-      </button>
-      {Array.from({ length: Math.min(totalPages, 5) }, (_, index) => index + 1).map((pageNumber) => (
-        <button
-          key={pageNumber}
-          className={pageNumber === page ? "is-current" : ""}
-          onClick={() => onPage(pageNumber)}
-          aria-current={pageNumber === page ? "page" : undefined}
-        >
-          {pageNumber}
-        </button>
-      ))}
-      <button
-        onClick={() => onPage(Math.min(totalPages, page + 1))}
-        disabled={page === totalPages}
-        aria-label="Página siguiente"
-      >
-        <i className="ti ti-chevron-right" aria-hidden="true" />
-      </button>
-    </div>
+    <nav className="pagination" aria-label="Paginación">
+      <IconButton icon="ti-chevron-left" label="Página anterior" onClick={() => onPage(Math.max(1, page - 1))} disabled={page === 1} />
+      {Array.from({ length: Math.min(totalPages, 5) }, (_, index) => index + 1).map((pageNumber) => <button key={pageNumber} className={pageNumber === page ? "is-current" : ""} onClick={() => onPage(pageNumber)} aria-current={pageNumber === page ? "page" : undefined}>{pageNumber}</button>)}
+      <IconButton icon="ti-chevron-right" label="Página siguiente" onClick={() => onPage(Math.min(totalPages, page + 1))} disabled={page === totalPages} />
+    </nav>
   );
 }
 
 export function ErrorBanner({ message, onRetry }) {
-  return (
-    <div className="error-banner" role="alert">
-      <i className="ti ti-alert-circle" aria-hidden="true" />
-      <span>{message}</span>
-      {onRetry && <button onClick={onRetry}>Reintentar</button>}
-    </div>
-  );
+  return <div className="error-banner" role="alert"><Icon name="alert-circle" /><span>{message}</span>{onRetry && <button onClick={onRetry}>Reintentar</button>}</div>;
 }
 
 export function SkeletonRows({ cols = 5, rows = 5 }) {
-  return Array.from({ length: rows }).map((_, rowIndex) => (
-    <tr key={rowIndex} className="skeleton-row">
-      {Array.from({ length: cols }).map((__, columnIndex) => (
-        <td key={columnIndex}>
-          <div className={columnIndex === 0 ? "skeleton-line is-wide" : "skeleton-line"} />
-        </td>
-      ))}
-    </tr>
-  ));
+  return Array.from({ length: rows }).map((_, rowIndex) => <tr key={rowIndex} className="skeleton-row">{Array.from({ length: cols }).map((__, columnIndex) => <td key={columnIndex}><div className={columnIndex === 0 ? "skeleton-line is-wide" : "skeleton-line"} /></td>)}</tr>);
 }
 
-export function Modal({ title, onClose, children, footer }) {
+export function Modal({ title, description, onClose, children, footer, wide = false }) {
   return (
     <div className="app-modal-backdrop" role="presentation">
-      <section className="app-modal" role="dialog" aria-modal="true" aria-label={title}>
-        <header className="app-modal-header">
-          <h2>{title}</h2>
-          <button onClick={onClose} aria-label="Cerrar">
-            <i className="ti ti-x" aria-hidden="true" />
-          </button>
-        </header>
-        <div className="app-modal-body">{children}</div>
-        {footer && <footer className="app-modal-footer">{footer}</footer>}
+      <section className={`app-modal${wide ? " app-modal-wide" : ""}`} role="dialog" aria-modal="true" aria-label={title}>
+        <header className="app-modal-header"><div><h2>{title}</h2>{description && <p>{description}</p>}</div><IconButton icon="ti-x" label="Cerrar" onClick={onClose} /></header>
+        <div className="app-modal-body">{children}</div>{footer && <footer className="app-modal-footer">{footer}</footer>}
       </section>
     </div>
   );
 }
 
-export function FormField({ label, children }) {
+export function Drawer({ title, subtitle, onClose, children, footer }) {
   return (
-    <label className="form-field">
-      <span>{label}</span>
-      {children}
-    </label>
+    <div className="ui-drawer-layer" role="presentation">
+      <button className="ui-drawer-scrim" aria-label="Cerrar panel" onClick={onClose} />
+      <aside className="ui-drawer" role="dialog" aria-modal="true" aria-label={title}>
+        <header className="ui-drawer-header"><div><span>Detalle</span><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div><IconButton icon="ti-x" label="Cerrar" onClick={onClose} /></header>
+        <div className="ui-drawer-body">{children}</div>{footer && <footer className="ui-drawer-footer">{footer}</footer>}
+      </aside>
+    </div>
   );
 }
+
+export function FormField({ label, hint, required = false, children }) {
+  return <label className="form-field"><span>{label}{required && <b aria-hidden="true"> *</b>}</span>{children}{hint && <small>{hint}</small>}</label>;
+}
+import Icon from "./Icon";

@@ -1,12 +1,13 @@
 import { useAuth } from "../hooks/useAuth";
+import Icon from "./Icon";
 
 const NAV = [
-  { icon: "ti-layout-dashboard", label: "Resumen", page: "dashboard", section: "Operación" },
-  { icon: "ti-users", label: "Clientes", page: "clients", section: "Operación" },
-  { icon: "ti-package", label: "Productos", page: "products", section: "Operación" },
-  { icon: "ti-receipt", label: "Ventas", page: "sales", section: "Comercial" },
-  { icon: "ti-history", label: "Historial", page: "history", section: "Comercial" },
-  { icon: "ti-user-shield", label: "Usuarios", page: "users", section: "Administración", adminOnly: true },
+  { icon: "home", label: "Resumen", page: "dashboard", section: "Operación" },
+  { icon: "user", label: "Clientes", page: "clients", section: "Operación" },
+  { icon: "package", label: "Productos", page: "products", section: "Operación" },
+  { icon: "credit-card", label: "Ventas", page: "sales", section: "Comercial" },
+  { icon: "clock", label: "Historial", page: "history", section: "Comercial" },
+  { icon: "user-shield", label: "Usuarios", page: "users", section: "Administración", adminOnly: true },
 ];
 
 export default function Sidebar({ currentPage, onNavigate }) {
@@ -22,33 +23,28 @@ export default function Sidebar({ currentPage, onNavigate }) {
     <nav className="app-sidebar" aria-label="Navegación principal">
       <div className="sidebar-brand">
         <div className="sidebar-brand-mark" aria-hidden="true">
-          <i className="ti ti-address-book" />
+          <Icon name="address-book" size={20} />
         </div>
         <div className="sidebar-brand-copy">
           <strong>YourClients</strong>
-          <span>{isAuthenticated ? "Gestión comercial" : "Vista de demostración"}</span>
+          <span>{isAuthenticated ? "Workspace comercial" : "Vista de demostración"}</span>
         </div>
       </div>
 
       <div className="sidebar-nav">
-        {visibleNav.map((item, index) => {
-          const active = currentPage === item.page;
-          const showSection = item.section !== visibleNav[index - 1]?.section;
-
-          return (
-            <div className="sidebar-nav-group" key={item.page}>
-              {showSection && <div className="sidebar-section">{item.section}</div>}
-              <button
-                className={`sidebar-link${active ? " is-active" : ""}`}
-                onClick={() => onNavigate(item.page)}
-                aria-current={active ? "page" : undefined}
-              >
-                <i className={`ti ${item.icon}`} aria-hidden="true" />
-                <span>{item.label}</span>
-              </button>
-            </div>
-          );
-        })}
+        {[...new Set(visibleNav.map((item) => item.section))].map((section) => (
+          <section className="sidebar-nav-section" key={section} aria-label={section}>
+            <div className="sidebar-section">{section}</div>
+            {visibleNav.filter((item) => item.section === section).map((item) => {
+              const active = currentPage === item.page;
+              return (
+                <button className={`sidebar-link${active ? " is-active" : ""}`} key={item.page} onClick={() => onNavigate(item.page)} aria-current={active ? "page" : undefined}>
+                  <Icon name={item.icon} size={18} /><span>{item.label}</span>
+                </button>
+              );
+            })}
+          </section>
+        ))}
       </div>
 
       <div className="sidebar-footer">
@@ -65,7 +61,7 @@ export default function Sidebar({ currentPage, onNavigate }) {
           title={isAuthenticated ? "Cerrar sesión" : "Iniciar sesión"}
           aria-label={isAuthenticated ? "Cerrar sesión" : "Iniciar sesión"}
         >
-          <i className={`ti ${isAuthenticated ? "ti-logout" : "ti-login"}`} aria-hidden="true" />
+          <Icon name={isAuthenticated ? "logout" : "login"} size={17} />
         </button>
       </div>
     </nav>

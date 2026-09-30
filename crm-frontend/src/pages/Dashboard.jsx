@@ -1,24 +1,15 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../utils/apiFetch";
 import Layout from "../components/Layout";
-import { S, Avatar, SkeletonRows, ErrorBanner, fmtMoney, fmtNum } from "../components/ui";
+import { Avatar, Button, DataPanel, EmptyState, ErrorBanner, PageHeader, SkeletonRows, fmtMoney, fmtNum } from "../components/ui";
 import { NewSaleModal } from "./Sales";
+import Icon from "../components/Icon";
 
-function KpiCard({ icon, label, value, sub, chipLabel }) {
+function SummaryMetric({ icon, label, value, detail }) {
   return (
-    <article className="metric-card">
-      <div className="metric-card-topline">
-        <span className="metric-card-icon"><i className={`ti ${icon}`} aria-hidden="true" /></span>
-        <span className="metric-card-period">{chipLabel}</span>
-      </div>
-      <span className="metric-card-label">{label}</span>
-      <strong className="metric-card-value">{value}</strong>
-      {sub && (
-        <div className="metric-card-subline">
-          <i className="ti ti-trending-up" aria-hidden="true" />
-          {sub}
-        </div>
-      )}
+    <article className="dashboard-summary-metric">
+      <div className="dashboard-summary-icon"><Icon name={icon} size={19} /></div>
+      <div><span>{label}</span><strong>{value}</strong>{detail && <small>{detail}</small>}</div>
     </article>
   );
 }
@@ -30,142 +21,102 @@ export default function Dashboard({ currentPage, onNavigate }) {
   const [showSaleModal, setShowSaleModal] = useState(false);
 
   async function fetchStats() {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const res = await apiFetch("/stats");
       if (!res?.ok) throw new Error("No se pudieron cargar las estadísticas.");
       setStats(await res.json());
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { fetchStats(); }, []);
 
   return (
-    <Layout
-      currentPage={currentPage}
-      onNavigate={onNavigate}
-      showSearch={false}
-      headerRight={
-        <button style={S.btnPrimary} onClick={() => setShowSaleModal(true)}>
-          <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nueva Venta
-        </button>
-      }>
-
+    <Layout currentPage={currentPage} onNavigate={onNavigate} showSearch={false}>
       <div className="page-stack dashboard-page">
-        <div className="page-heading">
-          <div>
-            <span className="page-kicker">Actividad comercial</span>
-            <h1>Resumen</h1>
-            <p>Una lectura rápida del rendimiento y los movimientos recientes.</p>
-          </div>
-        </div>
+        <PageHeader
+          eyebrow="Panorama comercial"
+          title="Resumen"
+          description="Indicadores clave y actividad reciente del negocio."
+          actions={<Button icon="ti-plus" onClick={() => setShowSaleModal(true)}>Nueva venta</Button>}
+        />
 
         {error && <ErrorBanner message={error} onRetry={fetchStats} />}
 
-        <div className="metric-grid">
-          <KpiCard
-            icon="ti-receipt"
-            label="Total ventas"
-            value={loading ? "-" : fmtNum(stats?.totalSales)}
-            sub={stats ? `${fmtNum(stats.salesThisMonth)} este mes` : null}
-            chipLabel="Acumulado"
-          />
-          <KpiCard
-            icon="ti-chart-line"
-            label="Ingresos este mes"
-            value={loading ? "-" : fmtMoney(stats?.revenueThisMonth)}
-            chipLabel="Mes actual"
-          />
-          <KpiCard
-            icon="ti-wallet"
-            label="Ingresos totales"
-            value={loading ? "-" : fmtMoney(stats?.totalRevenue)}
-            chipLabel="Histórico"
-          />
-        </div>
+        <section className="dashboard-overview" aria-label="Indicadores principales">
+          <article className="dashboard-primary-metric">
+            <div className="dashboard-primary-heading">
+              <div><span>Ingresos del mes</span><small>Mes actual</small></div>
+              <div className="dashboard-primary-icon"><Icon name="chart-line" size={21} /></div>
+            </div>
+            <strong>{loading ? "-" : fmtMoney(stats?.revenueThisMonth)}</strong>
+            <footer>
+              <span><Icon name="receipt" size={15} /> {loading ? "-" : fmtNum(stats?.salesThisMonth)} ventas registradas</span>
+              <button onClick={() => onNavigate("sales")}>Ver ventas <Icon name="arrow-right" size={15} /></button>
+            </footer>
+          </article>
 
-        <div className="dashboard-grid">
-          <section className="data-panel">
-            <header className="data-panel-header">
-              <div>
-                <h2>Productos con más movimiento</h2>
-                <span>Ordenados por unidades vendidas</span>
-              </div>
-              <button className="panel-link" onClick={() => onNavigate("products")}>Ver productos <i className="ti ti-arrow-right" aria-hidden="true" /></button>
-            </header>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead><tr>
-                <th style={S.th}>Producto</th>
-                <th style={{ ...S.th, textAlign: "right" }}>Cant.</th>
-                <th style={{ ...S.th, textAlign: "right" }}>Ingresos</th>
-              </tr></thead>
-              <tbody>
-                {loading ? <SkeletonRows cols={3} rows={5} /> :
-                  !stats?.topProducts?.length
-                    ? <tr><td colSpan={3} style={{ ...S.td, textAlign: "center", color: "#64748B", padding: "30px" }}>Sin datos aún</td></tr>
-                    : stats.topProducts.map((p, i) => (
-                      <tr key={p.productId}
-                        onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
-                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-                        <td style={S.td}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#E8EFFF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", fontWeight: "600", color: "#172033", flexShrink: 0 }}>{i + 1}</span>
-                            <span style={{ fontSize: "13px", fontWeight: "500" }}>{p.productName}</span>
-                          </div>
-                        </td>
-                        <td style={{ ...S.td, textAlign: "right", fontSize: "13px", color: "#64748B" }}>{fmtNum(p.totalQuantitySold)}</td>
-                        <td style={{ ...S.td, textAlign: "right", fontSize: "13px", fontWeight: "500" }}>{fmtMoney(p.totalRevenue)}</td>
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
-          </section>
+          <div className="dashboard-secondary-metrics">
+            <SummaryMetric icon="ti-wallet" label="Ingresos acumulados" value={loading ? "-" : fmtMoney(stats?.totalRevenue)} detail="Histórico total" />
+            <SummaryMetric icon="ti-shopping-cart" label="Ventas acumuladas" value={loading ? "-" : fmtNum(stats?.totalSales)} detail="Todas las operaciones" />
+          </div>
+        </section>
 
-          <section className="data-panel">
-            <header className="data-panel-header">
-              <div>
-                <h2>Clientes con mayor actividad</h2>
-                <span>Ordenados por valor acumulado</span>
-              </div>
-              <button className="panel-link" onClick={() => onNavigate("clients")}>Ver clientes <i className="ti ti-arrow-right" aria-hidden="true" /></button>
-            </header>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead><tr>
-                <th style={S.th}>Cliente</th>
-                <th style={{ ...S.th, textAlign: "right" }}>Compras</th>
-                <th style={{ ...S.th, textAlign: "right" }}>Total</th>
-              </tr></thead>
-              <tbody>
-                {loading ? <SkeletonRows cols={3} rows={5} /> :
-                  !stats?.topClients?.length
-                    ? <tr><td colSpan={3} style={{ ...S.td, textAlign: "center", color: "#64748B", padding: "30px" }}>Sin datos aún</td></tr>
-                    : stats.topClients.map((c) => (
-                      <tr key={c.clientId}
-                        onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
-                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-                        <td style={S.td}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <Avatar name={c.clientName} size={24} fontSize={9} />
-                            <span style={{ fontSize: "13px", fontWeight: "500" }}>{c.clientName}</span>
-                          </div>
-                        </td>
-                        <td style={{ ...S.td, textAlign: "right", fontSize: "13px", color: "#64748B" }}>{fmtNum(c.totalPurchases)}</td>
-                        <td style={{ ...S.td, textAlign: "right", fontSize: "13px", fontWeight: "500" }}>{fmtMoney(c.totalSpent)}</td>
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
-          </section>
+        <div className="dashboard-data-grid">
+          <DataPanel
+            title="Productos con más movimiento"
+            description="Rendimiento por unidades vendidas"
+            action={<Button variant="text" icon="ti-arrow-right" onClick={() => onNavigate("products")}>Ver catálogo</Button>}
+          >
+            <div className="table-scroll">
+              <table className="ui-table dashboard-table">
+                <thead><tr><th>Producto</th><th className="align-right">Unidades</th><th className="align-right">Ingresos</th></tr></thead>
+                <tbody>
+                  {loading ? <SkeletonRows cols={3} rows={5} /> : !stats?.topProducts?.length ? (
+                    <tr><td colSpan={3}><EmptyState compact icon="ti-package" title="Todavía no hay movimientos" description="Los productos vendidos aparecerán en este listado." /></td></tr>
+                  ) : stats.topProducts.map((product, index) => (
+                    <tr key={product.productId}>
+                      <td><div className="table-primary-cell"><span className="table-rank">{index + 1}</span><strong>{product.productName}</strong></div></td>
+                      <td className="align-right muted-cell">{fmtNum(product.totalQuantitySold)}</td>
+                      <td className="align-right money-cell">{fmtMoney(product.totalRevenue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DataPanel>
+
+          <DataPanel
+            title="Clientes con mayor actividad"
+            description="Ordenados por valor acumulado"
+            action={<Button variant="text" icon="ti-arrow-right" onClick={() => onNavigate("clients")}>Ver clientes</Button>}
+          >
+            <div className="table-scroll">
+              <table className="ui-table dashboard-table">
+                <thead><tr><th>Cliente</th><th className="align-right">Compras</th><th className="align-right">Total</th></tr></thead>
+                <tbody>
+                  {loading ? <SkeletonRows cols={3} rows={5} /> : !stats?.topClients?.length ? (
+                    <tr><td colSpan={3}><EmptyState compact icon="ti-users" title="Todavía no hay actividad" description="Los clientes con compras aparecerán aquí." /></td></tr>
+                  ) : stats.topClients.map((client) => (
+                    <tr key={client.clientId}>
+                      <td><div className="table-primary-cell"><Avatar name={client.clientName} size={28} fontSize={9} /><strong>{client.clientName}</strong></div></td>
+                      <td className="align-right muted-cell">{fmtNum(client.totalPurchases)}</td>
+                      <td className="align-right money-cell">{fmtMoney(client.totalSpent)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </DataPanel>
         </div>
       </div>
 
-      {showSaleModal && (
-        <NewSaleModal
-          onClose={() => setShowSaleModal(false)}
-          onSave={() => { setShowSaleModal(false); fetchStats(); }}
-        />
-      )}
+      {showSaleModal && <NewSaleModal onClose={() => setShowSaleModal(false)} onSave={() => { setShowSaleModal(false); fetchStats(); }} />}
     </Layout>
   );
 }

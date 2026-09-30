@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
-import { S, Avatar, getInitials, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
+import { S, Avatar, Button, Drawer, Metric, PageHeader, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
+import Icon from "../components/Icon";
 
 function ClientModal({ client, onClose, onSave }) {
   const [form, setForm] = useState({ name: client?.name ?? "", phone: client?.phone ?? "", email: client?.email ?? "", source: client?.source ?? "", notes: client?.notes ?? "" });
@@ -53,70 +54,45 @@ function ClientModal({ client, onClose, onSave }) {
 function DetailPanel({ client, onClose, onEdit }) {
   if (!client) return null;
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(23,32,51,0.3)", backdropFilter: "blur(3px)" }} onClick={onClose} />
-      <div style={{ position: "relative", background: "#fff", width: "320px", height: "100%", boxShadow: "-4px 0 30px rgba(23,32,51,0.12)", display: "flex", flexDirection: "column", zIndex: 10 }}>
-        <div style={{ background: "#172033", padding: "22px 20px", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
-            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "6px", cursor: "pointer", color: "rgba(255,255,255,0.7)", padding: "4px 8px", display: "flex" }}>
-              <i className="ti ti-x" style={{ fontSize: "16px" }} aria-hidden="true" />
-            </button>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: "600", color: "#fff", flexShrink: 0 }}>
-              {getInitials(client.name)}
-            </div>
-            <div>
-              <div style={{ fontSize: "15px", fontWeight: "500", color: "#fff" }}>{client.name}</div>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "2px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", marginTop: "4px", background: client.active ? "rgba(29,158,117,0.2)" : "rgba(255,255,255,0.1)", color: client.active ? "#4edea3" : "rgba(255,255,255,0.5)" }}>
-                <span style={{ width: "4px", height: "4px", borderRadius: "50%", background: client.active ? "#4edea3" : "rgba(255,255,255,0.4)", display: "inline-block" }} />
-                {client.active ? "Activo" : "Inactivo"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-            <div>
-              <div style={{ fontSize: "10px", fontWeight: "500", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Contacto</div>
-              {[
-                { icon: "ti-phone", label: "Teléfono", value: client.phone },
-                { icon: "ti-mail", label: "Email", value: client.email },
-                { icon: "ti-user-plus", label: "Fuente", value: client.source },
-                { icon: "ti-calendar", label: "Registrado", value: client.registrationDate },
-              ].map((item) => (
-                <div key={item.label} style={{ display: "flex", alignItems: "flex-start", gap: "10px", padding: "8px 0", borderBottom: "0.5px solid rgba(23,32,51,0.06)" }}>
-                  <i className={`ti ${item.icon}`} style={{ fontSize: "15px", color: "#64748B", marginTop: "1px", flexShrink: 0 }} aria-hidden="true" />
-                  <div>
-                    <div style={{ fontSize: "10px", color: "#64748B", marginBottom: "2px" }}>{item.label}</div>
-                    <div style={{ fontSize: "13px", color: "#172033", fontWeight: "500" }}>{item.value ?? "—"}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <div style={{ fontSize: "10px", fontWeight: "500", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Observaciones</div>
-              {client.notes ? (
-                <div style={{ background: "#FAEEDA", border: "0.5px solid rgba(239,159,39,0.3)", borderRadius: "8px", padding: "12px 14px" }}>
-                  <p style={{ fontSize: "13px", color: "#172033", lineHeight: "1.6", margin: 0, whiteSpace: "pre-wrap" }}>{client.notes}</p>
-                </div>
-              ) : (
-                <div style={{ background: "#F4F6F9", borderRadius: "8px", padding: "20px", textAlign: "center" }}>
-                  <i className="ti ti-notes" style={{ fontSize: "26px", color: "#D5DCE6", display: "block", marginBottom: "6px" }} aria-hidden="true" />
-                  <span style={{ fontSize: "12px", color: "#64748B" }}>Sin observaciones</span>
-                </div>
-              )}
-            </div>
-
-            <button style={{ ...S.btnPrimary, justifyContent: "center" }} onClick={() => onEdit(client)}>
-              <i className="ti ti-edit" style={{ fontSize: "14px" }} aria-hidden="true" /> Editar cliente
-            </button>
-          </div>
+    <Drawer
+      title={client.name}
+      subtitle={client.active ? "Cliente activo" : "Cliente inactivo"}
+      onClose={onClose}
+      footer={<Button icon="ti-edit" onClick={() => onEdit(client)}>Editar cliente</Button>}
+    >
+      <div className="client-identity">
+        <Avatar name={client.name} size={46} fontSize={15} />
+        <div>
+          <strong>{client.name}</strong>
+          <span className={client.active ? "is-active" : ""}>{client.active ? "Activo" : "Inactivo"}</span>
         </div>
       </div>
-    </div>
+
+      <section className="detail-section">
+        <div className="detail-section-heading"><span>Contacto</span></div>
+        <dl className="detail-list">
+          {[
+            { icon: "ti-phone", label: "Teléfono", value: client.phone },
+            { icon: "ti-mail", label: "Email", value: client.email },
+            { icon: "ti-user-plus", label: "Fuente", value: client.source },
+            { icon: "ti-calendar", label: "Registrado", value: client.registrationDate },
+          ].map((item) => (
+            <div key={item.label}>
+              <Icon name={item.icon} size={16} />
+              <dt>{item.label}</dt>
+              <dd>{item.value ?? "—"}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <section className="detail-section">
+        <div className="detail-section-heading"><span>Observaciones</span></div>
+        {client.notes ? <div className="detail-note"><p>{client.notes}</p></div> : (
+          <div className="detail-empty"><Icon name="notes" size={23} /><span>Sin observaciones</span></div>
+        )}
+      </section>
+    </Drawer>
   );
 }
 
@@ -185,38 +161,21 @@ export default function Clients({ currentPage, onNavigate }) {
   ];
 
   return (
-    <Layout currentPage={currentPage} onNavigate={onNavigate}
-      searchPlaceholder="Buscar cliente..." searchValue={search} onSearch={setSearch}
-      headerRight={
-        <button style={S.btnPrimary} onClick={() => setModal("create")}>
-          <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nuevo Cliente
-        </button>
-      }>
+    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar cliente..." searchValue={search} onSearch={setSearch}>
       <div className="page-stack">
-        <div className="page-heading">
-          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#172033", margin: 0 }}>Clientes</h1>
-          <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Gestioná tu base de clientes</p>
-        </div>
+        <PageHeader eyebrow="Relaciones" title="Clientes" description="Contactos, estado comercial y contexto de cada cuenta." actions={<Button icon="ti-user-plus" onClick={() => setModal("create")}>Nuevo cliente</Button>} meta={loading ? "Cargando" : `${clients.length} registros`} />
 
-        <div className="compact-metric-grid compact-metric-grid-four">
+        <div className="page-metric-strip">
           {kpis.map((k) => (
-            <div className="compact-metric" key={k.label}>
-              <div className="compact-metric-icon" style={{ background: k.bg }}>
-                <i className={`ti ${k.icon}`} style={{ fontSize: "16px", color: k.color }} aria-hidden="true" />
-              </div>
-              <div>
-                <span className="compact-metric-label">{k.label}</span>
-                <strong className="compact-metric-value">{loading ? "-" : k.value}</strong>
-              </div>
-            </div>
+            <Metric key={k.label} label={k.label} value={loading ? "-" : k.value} icon={k.icon} tone={k.label === "Inactivos" ? "neutral" : k.label === "% Activos" ? "warm" : "blue"} />
           ))}
         </div>
 
         {error && <ErrorBanner message={error} onRetry={fetchClients} />}
 
-        <div style={S.card}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="ui-data-panel">
+          <div className="table-scroll">
+            <table className="ui-table">
               <thead>
                 <tr>
                   {["Cliente", "Teléfono", "Email", "Fuente", "Notas", "Estado", ""].map((h, i) => (
@@ -266,7 +225,7 @@ export default function Clients({ currentPage, onNavigate }) {
                               style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
                               onMouseEnter={(e) => { e.currentTarget.style.background = "#F4F6F9"; e.currentTarget.style.color = "#172033"; }}
                               onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
-                              <i className={`ti ${btn.icon}`} style={{ fontSize: "15px" }} aria-hidden="true" />
+                              <Icon name={btn.icon} size={16} />
                             </button>
                           ))}
                         </div>
@@ -276,7 +235,7 @@ export default function Clients({ currentPage, onNavigate }) {
               </tbody>
             </table>
           </div>
-          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(23,32,51,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="table-footer">
             <span style={{ fontSize: "12px", color: "#64748B" }}>{loading ? "Cargando..." : `${filtered.length} clientes`}</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>

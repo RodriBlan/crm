@@ -1,54 +1,9 @@
 import { useState, useEffect } from "react";
 import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
-import { S, Avatar, StatusBadge, SkeletonRows, Pagination, ErrorBanner, FormField, fmtMoney } from "../components/ui";
-
-function SaleDetailPanel({ sale, onClose }) {
-  if (!sale) return null;
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(23,32,51,0.3)", backdropFilter: "blur(3px)" }} onClick={onClose} />
-      <div style={{ position: "relative", background: "#fff", width: "320px", height: "100%", boxShadow: "-4px 0 30px rgba(23,32,51,0.12)", display: "flex", flexDirection: "column", zIndex: 10 }}>
-        <div style={{ background: "#172033", padding: "22px 20px", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "14px" }}>
-            <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "6px", cursor: "pointer", color: "rgba(255,255,255,0.7)", padding: "4px 8px", display: "flex" }}>
-              <i className="ti ti-x" style={{ fontSize: "16px" }} aria-hidden="true" />
-            </button>
-          </div>
-          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Venta #{sale.id}</div>
-          <div style={{ fontSize: "15px", fontWeight: "500", color: "#fff" }}>{sale.clientName}</div>
-          <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginTop: "4px" }}>{new Date(sale.date).toLocaleDateString("es-AR")}</div>
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <StatusBadge status={sale.status} />
-            <span style={{ fontSize: "20px", fontWeight: "500", color: "#172033", fontFamily: "monospace" }}>{fmtMoney(sale.total)}</span>
-          </div>
-          {sale.notes && (
-            <div style={{ background: "#FAEEDA", border: "0.5px solid rgba(239,159,39,0.3)", borderRadius: "8px", padding: "12px 14px" }}>
-              <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Notas</div>
-              <p style={{ fontSize: "13px", color: "#172033", margin: 0 }}>{sale.notes}</p>
-            </div>
-          )}
-          <div>
-            <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Items</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              {sale.items?.map((item) => (
-                <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#F4F6F9", borderRadius: "8px", padding: "10px 12px" }}>
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: "500", color: "#172033" }}>{item.productName}</div>
-                    <div style={{ fontSize: "11px", color: "#64748B", marginTop: "2px" }}>{item.quantity} × ${Number(item.unitPrice).toFixed(2)}</div>
-                  </div>
-                  <span style={{ fontSize: "13px", fontFamily: "monospace", fontWeight: "500", color: "#172033" }}>${Number(item.subtotal).toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+import { S, Avatar, Button, PageHeader, StatusBadge, SkeletonRows, Pagination, ErrorBanner, FormField, fmtMoney } from "../components/ui";
+import SaleDetailDrawer from "../components/SaleDetailDrawer";
+import Icon from "../components/Icon";
 
 // Este es el fragmento del NewSaleModal con el buscador de productos mejorado.
 // Reemplazá el componente NewSaleModal completo en Sales.jsx con este.
@@ -147,14 +102,14 @@ export function NewSaleModal({ onClose, onSave }) {
         <div className="app-modal-header" style={{ padding: "18px 22px", borderBottom: "0.5px solid rgba(23,32,51,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <span style={{ fontSize: "15px", fontWeight: "500", color: "#172033" }}>Registrar Nueva Venta</span>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B" }}>
-            <i className="ti ti-x" style={{ fontSize: "18px" }} aria-hidden="true" />
+            <Icon name="x" size={19} />
           </button>
         </div>
 
         <div className="app-modal-body sale-modal-body" style={{ padding: "20px 22px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "16px" }}>
           {error && (
             <div style={{ background: "#FCEBEB", border: "0.5px solid rgba(163,45,45,0.2)", borderRadius: "8px", padding: "10px 14px", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#A32D2D" }}>
-              <i className="ti ti-alert-circle" style={{ fontSize: "15px" }} aria-hidden="true" />{error}
+              <Icon name="alert-circle" size={16} />{error}
             </div>
           )}
 
@@ -179,7 +134,7 @@ export function NewSaleModal({ onClose, onSave }) {
             )}
             {clientId && (
               <div style={{ fontSize: "11px", color: "#0F6E56", display: "flex", alignItems: "center", gap: "4px" }}>
-                <i className="ti ti-circle-check" style={{ fontSize: "13px" }} aria-hidden="true" />Cliente seleccionado
+                <Icon name="circle-check" size={14} />Cliente seleccionado
               </div>
             )}
           </FormField>
@@ -188,7 +143,7 @@ export function NewSaleModal({ onClose, onSave }) {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
               <span style={{ fontSize: "11px", fontWeight: "500", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em" }}>Productos *</span>
               <button onClick={addItem} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "12px", color: "#2563EB", display: "flex", alignItems: "center", gap: "4px" }}>
-                <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Agregar item
+                <Icon name="plus" size={15} /> Agregar item
               </button>
             </div>
 
@@ -204,7 +159,7 @@ export function NewSaleModal({ onClose, onSave }) {
                       {/* Buscador de producto — campo de texto con dropdown */}
                       <div style={{ flex: 1, position: "relative" }}>
                         <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                          <i className="ti ti-search" style={{ position: "absolute", left: "10px", fontSize: "13px", color: "#64748B", pointerEvents: "none" }} aria-hidden="true" />
+                          <Icon name="search" size={14} style={{ position: "absolute", left: "10px", pointerEvents: "none" }} />
                           <input
                             type="text"
                             value={productSearches[i] ?? ""}
@@ -214,7 +169,7 @@ export function NewSaleModal({ onClose, onSave }) {
                           />
                           {/* Indicador de producto seleccionado */}
                           {item.productId && (
-                            <i className="ti ti-circle-check" style={{ position: "absolute", right: "10px", fontSize: "14px", color: "#0F6E56", pointerEvents: "none" }} aria-hidden="true" />
+                            <Icon name="circle-check" size={15} style={{ position: "absolute", right: "10px", pointerEvents: "none" }} />
                           )}
                         </div>
 
@@ -258,14 +213,14 @@ export function NewSaleModal({ onClose, onSave }) {
                           style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "8px 4px", display: "flex", flexShrink: 0 }}
                           onMouseEnter={(e) => e.currentTarget.style.color = "#A32D2D"}
                           onMouseLeave={(e) => e.currentTarget.style.color = "#64748B"}>
-                          <i className="ti ti-trash" style={{ fontSize: "15px" }} aria-hidden="true" />
+                          <Icon name="trash" size={16} />
                         </button>
                       )}
                     </div>
 
                     {stockWarning && (
                       <div style={{ fontSize: "11px", color: "#A32D2D", display: "flex", alignItems: "center", gap: "4px", marginTop: "6px" }}>
-                        <i className="ti ti-alert-triangle" style={{ fontSize: "13px" }} aria-hidden="true" />
+                        <Icon name="alert-triangle" size={14} />
                         Stock insuficiente — disponible: {selectedProduct.stock}
                       </div>
                     )}
@@ -292,11 +247,11 @@ export function NewSaleModal({ onClose, onSave }) {
         <div className="app-modal-footer" style={{ padding: "14px 22px", borderTop: "0.5px solid rgba(23,32,51,0.1)", display: "flex", justifyContent: "flex-end", gap: "8px", flexShrink: 0 }}>
           <button style={S.btnSecondary} onClick={onClose}>Cancelar</button>
           <button style={S.btnWarning} onClick={() => handleSubmit("PENDING")} disabled={loading}>
-            <i className="ti ti-clock" style={{ fontSize: "14px" }} aria-hidden="true" /> Dejar Pendiente
+            <Icon name="clock" size={15} /> Dejar Pendiente
           </button>
-          <button style={S.btnPrimary} onClick={() => handleSubmit("COMPLETED")} disabled={loading}>
+          <button className="icon-inverse" style={S.btnPrimary} onClick={() => handleSubmit("COMPLETED")} disabled={loading}>
             {loading && <span style={{ width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />}
-            <i className="ti ti-check" style={{ fontSize: "14px" }} aria-hidden="true" /> Guardar Venta
+            <Icon name="check" size={15} /> Guardar Venta
           </button>
         </div>
       </div>
@@ -364,19 +319,10 @@ export default function Sales({ currentPage, onNavigate }) {
   const pending = sales.filter((s) => s.status === "PENDING").length;
 
   return (
-    <Layout currentPage={currentPage} onNavigate={onNavigate}
-      searchPlaceholder="Buscar por cliente..." searchValue={search} onSearch={setSearch}
-      headerRight={
-        <button style={S.btnPrimary} onClick={() => setModal(true)}>
-          <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nueva Venta
-        </button>
-      }>
+    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar por cliente..." searchValue={search} onSearch={setSearch}>
       <div className="page-stack">
-        <div className="page-heading page-heading-with-metrics">
-          <div>
-            <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#172033", margin: 0 }}>Ventas</h1>
-            <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Gestioná y monitoreá tus transacciones</p>
-          </div>
+        <PageHeader eyebrow="Operaciones" title="Ventas" description="Seguimiento de transacciones, importes y estados." actions={<Button icon="ti-plus" onClick={() => setModal(true)}>Nueva venta</Button>} meta={`${filtered.length} visibles`} />
+        <div className="sales-summary-bar">
           <div className="page-inline-metrics">
             {[
               { label: "Volumen total", value: fmtMoney(totalVolume), color: "#172033" },
@@ -390,8 +336,8 @@ export default function Sales({ currentPage, onNavigate }) {
           </div>
         </div>
 
-        <div style={{ ...S.card, padding: "12px 16px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <i className="ti ti-filter" style={{ fontSize: "15px", color: "#64748B" }} aria-hidden="true" />
+        <div className="filter-bar">
+          <Icon name="filter" size={16} />
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
             style={{ ...S.input, width: "auto", appearance: "none", border: "none", background: "none", padding: "0", fontSize: "13px", color: "#172033", cursor: "pointer" }}>
             <option value="ALL">Todos los estados</option>
@@ -403,9 +349,9 @@ export default function Sales({ currentPage, onNavigate }) {
 
         {error && <ErrorBanner message={error} onRetry={fetchSales} />}
 
-        <div style={S.card}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "680px" }}>
+        <div className="ui-data-panel">
+          <div className="table-scroll">
+            <table className="ui-table sales-table">
               <thead>
                 <tr>
                   {["ID", "Fecha", "Cliente", "Total", "Estado", ""].map((h, i) => (
@@ -439,7 +385,7 @@ export default function Sales({ currentPage, onNavigate }) {
                               style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
                               onMouseEnter={(e) => { e.currentTarget.style.background = "#E1F5EE"; e.currentTarget.style.color = "#0F6E56"; }}
                               onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
-                              <i className="ti ti-circle-check" style={{ fontSize: "15px" }} aria-hidden="true" />
+                              <Icon name="circle-check" size={16} />
                             </button>
                           )}
                           {sale.status !== "CANCELLED" && (
@@ -447,14 +393,14 @@ export default function Sales({ currentPage, onNavigate }) {
                               style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
                               onMouseEnter={(e) => { e.currentTarget.style.background = "#FAEEDA"; e.currentTarget.style.color = "#854F0B"; }}
                               onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
-                              <i className="ti ti-ban" style={{ fontSize: "15px" }} aria-hidden="true" />
+                              <Icon name="ban" size={16} />
                             </button>
                           )}
                           <button onClick={() => handleDelete(sale.id)} title="Eliminar"
                             style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
                             onMouseEnter={(e) => { e.currentTarget.style.background = "#FCEBEB"; e.currentTarget.style.color = "#A32D2D"; }}
                             onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
-                            <i className="ti ti-trash" style={{ fontSize: "15px" }} aria-hidden="true" />
+                            <Icon name="trash" size={16} />
                           </button>
                         </div>
                       </td>
@@ -463,14 +409,14 @@ export default function Sales({ currentPage, onNavigate }) {
               </tbody>
             </table>
           </div>
-          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(23,32,51,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="table-footer">
             <span style={{ fontSize: "12px", color: "#64748B" }}>{filtered.length} ventas</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>
       </div>
 
-      {detail && <SaleDetailPanel sale={detail} onClose={() => setDetail(null)} />}
+      {detail && <SaleDetailDrawer sale={detail} onClose={() => setDetail(null)} />}
       {modal && <NewSaleModal onClose={() => setModal(false)} onSave={handleSave} />}
     </Layout>
   );

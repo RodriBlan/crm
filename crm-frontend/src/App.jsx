@@ -8,6 +8,7 @@ import Sales from "./pages/Sales";
 import History from "./pages/History";
 import AccessRequests from "./pages/AccessRequests";
 import NotFound from "./pages/NotFound";
+import Icon from "./components/Icon";
 
 const PAGES = {
   dashboard: Dashboard,
@@ -53,7 +54,7 @@ function AuthRequiredDialog({ onClose, onLogin }) {
     <div className="auth-required-backdrop" role="presentation">
       <div className="auth-required-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-required-title">
         <div className="auth-required-icon">
-          <i className="ti ti-lock" aria-hidden="true" />
+          <Icon name="lock" size={21} />
         </div>
         <h2 id="auth-required-title">Inicia sesion para continuar</h2>
         <p>La vista previa permite recorrer el CRM, pero las acciones reales requieren una cuenta autorizada.</p>
@@ -113,6 +114,9 @@ function AppRouter() {
     setShowAuthRequired(false);
     window.history.pushState(null, "", "/dashboard");
     setCurrentPage("dashboard");
+    window.requestAnimationFrame(() => {
+      document.getElementById("main-content")?.focus({ preventScroll: true });
+    });
   };
 
   if (!isAuthenticated && !previewMode) {

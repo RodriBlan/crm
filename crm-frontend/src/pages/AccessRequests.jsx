@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
-import { S, ErrorBanner } from "../components/ui";
+import { Button, DataPanel, EmptyState, ErrorBanner, PageHeader } from "../components/ui";
 import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import { useAuth } from "../hooks/useAuth";
 
@@ -48,10 +48,7 @@ export default function AccessRequests({ currentPage, onNavigate }) {
   return (
     <Layout currentPage={currentPage} onNavigate={onNavigate} showSearch={false}>
       <div className="page-stack">
-        <div className="page-heading">
-          <h1 style={{ fontSize: "20px", fontWeight: "600", color: "#172033", margin: 0 }}>Usuarios</h1>
-          <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Aproba o rechaza solicitudes de acceso a YourClients.</p>
-        </div>
+        <PageHeader eyebrow="Administración" title="Usuarios" description="Revisá y resolvé solicitudes de acceso al espacio de trabajo." meta={`${requests.length} pendientes`} actions={<Button variant="secondary" icon="ti-refresh" onClick={fetchRequests} disabled={loading}>Actualizar</Button>} />
 
         {!isAdmin && (
           <ErrorBanner message="Solo un administrador puede gestionar usuarios." />
@@ -59,23 +56,11 @@ export default function AccessRequests({ currentPage, onNavigate }) {
 
         {error && <ErrorBanner message={error} onRetry={fetchRequests} />}
 
-        <div style={S.card}>
-          <div style={{ padding: "16px 18px", borderBottom: "0.5px solid rgba(23,32,51,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
-            <div>
-              <div style={{ fontSize: "14px", fontWeight: "650", color: "#172033" }}>Solicitudes pendientes</div>
-              <div style={{ fontSize: "12px", color: "#64748B", marginTop: "3px" }}>{requests.length} pendientes</div>
-            </div>
-            <button style={S.btnSecondary} onClick={fetchRequests} disabled={loading}>
-              <i className="ti ti-refresh" aria-hidden="true" /> Actualizar
-            </button>
-          </div>
-
+        <DataPanel title="Solicitudes pendientes" description="Nuevas cuentas que requieren una decisión del administrador.">
           {loading ? (
-            <div style={{ padding: "28px", color: "#64748B", fontSize: "13px" }}>Cargando solicitudes...</div>
+            <div className="panel-loading"><span className="login-spinner" /> Cargando solicitudes</div>
           ) : requests.length === 0 ? (
-            <div style={{ padding: "34px", textAlign: "center", color: "#64748B", fontSize: "13px" }}>
-              No hay solicitudes pendientes.
-            </div>
+            <EmptyState icon="ti-user-check" title="No hay solicitudes pendientes" description="Las nuevas solicitudes aparecerán aquí para su revisión." />
           ) : (
             <div className="access-request-list">
               {requests.map((request) => (
@@ -107,7 +92,7 @@ export default function AccessRequests({ currentPage, onNavigate }) {
               ))}
             </div>
           )}
-        </div>
+        </DataPanel>
       </div>
     </Layout>
   );

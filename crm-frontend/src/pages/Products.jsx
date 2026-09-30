@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
-import { S, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
+import { S, Button, PageHeader, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
+import Icon from "../components/Icon";
 
 function CategoryManager({ onClose }) {
   const [categories, setCategories] = useState([]);
@@ -40,8 +41,8 @@ function CategoryManager({ onClose }) {
         <div style={{ display: "flex", gap: "8px" }}>
           <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Nueva categoría..."
             onKeyDown={(e) => e.key === "Enter" && handleCreate()} style={{ ...S.input, flex: 1 }} />
-          <button style={S.btnPrimary} onClick={handleCreate} disabled={loading}>
-            {loading ? <span style={{ width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} /> : <i className="ti ti-plus" style={{ fontSize: "14px" }} />}
+          <button className="icon-inverse" style={S.btnPrimary} onClick={handleCreate} disabled={loading}>
+            {loading ? <span style={{ width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} /> : <Icon name="plus" size={15} />}
             Crear
           </button>
         </div>
@@ -54,7 +55,7 @@ function CategoryManager({ onClose }) {
               <button onClick={() => handleDelete(cat.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", display: "flex", padding: "2px" }}
                 onMouseEnter={(e) => e.currentTarget.style.color = "#A32D2D"}
                 onMouseLeave={(e) => e.currentTarget.style.color = "#64748B"}>
-                <i className="ti ti-trash" style={{ fontSize: "15px" }} aria-hidden="true" />
+                <Icon name="trash" size={16} />
               </button>
             </div>
           ))}
@@ -174,29 +175,15 @@ export default function Products({ currentPage, onNavigate }) {
   }
 
   return (
-    <Layout currentPage={currentPage} onNavigate={onNavigate}
-      searchPlaceholder="Buscar producto..." searchValue={search} onSearch={setSearch}
-      headerRight={
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button style={S.btnSecondary} onClick={() => setShowCategories(true)}>
-            <i className="ti ti-category" style={{ fontSize: "14px" }} aria-hidden="true" /> Categorías
-          </button>
-          <button style={S.btnPrimary} onClick={() => setModal("create")}>
-            <i className="ti ti-plus" style={{ fontSize: "14px" }} aria-hidden="true" /> Nuevo Producto
-          </button>
-        </div>
-      }>
+    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar producto..." searchValue={search} onSearch={setSearch}>
       <div className="page-stack">
-        <div className="page-heading">
-          <h1 style={{ fontSize: "20px", fontWeight: "500", color: "#172033", margin: 0 }}>Productos</h1>
-          <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px" }}>Gestioná tu catálogo, precios y stock</p>
-        </div>
+        <PageHeader eyebrow="Catálogo" title="Productos" description="Precios, disponibilidad y categorías de tu oferta." meta={loading ? "Cargando" : `${products.length} registros`} actions={<><Button variant="secondary" icon="ti-category" onClick={() => setShowCategories(true)}>Categorías</Button><Button icon="ti-plus" onClick={() => setModal("create")}>Nuevo producto</Button></>} />
 
         {error && <ErrorBanner message={error} onRetry={fetchProducts} />}
 
-        <div style={S.card}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div className="ui-data-panel">
+          <div className="table-scroll">
+            <table className="ui-table">
               <thead>
                 <tr>
                   {["Nombre", "Descripción", "Categoría", "Precio", "Stock", "Descuento", ""].map((h, i) => (
@@ -234,7 +221,7 @@ export default function Products({ currentPage, onNavigate }) {
                               style={{ background: "none", border: "none", cursor: "pointer", color: "#64748B", padding: "4px 5px", borderRadius: "6px", display: "flex" }}
                               onMouseEnter={(e) => { e.currentTarget.style.background = "#F4F6F9"; e.currentTarget.style.color = "#172033"; }}
                               onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#64748B"; }}>
-                              <i className={`ti ${btn.icon}`} style={{ fontSize: "15px" }} aria-hidden="true" />
+                              <Icon name={btn.icon} size={16} />
                             </button>
                           ))}
                         </div>
@@ -244,7 +231,7 @@ export default function Products({ currentPage, onNavigate }) {
               </tbody>
             </table>
           </div>
-          <div style={{ padding: "12px 16px", borderTop: "0.5px solid rgba(23,32,51,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="table-footer">
             <span style={{ fontSize: "12px", color: "#64748B" }}>{loading ? "Cargando..." : `${filtered.length} productos`}</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
