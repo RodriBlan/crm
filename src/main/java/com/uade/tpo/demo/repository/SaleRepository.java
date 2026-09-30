@@ -18,20 +18,23 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
     // Ventas en un rango de fechas
     List<Sale> findByDateBetween(LocalDateTime from, LocalDateTime to);
 
-    // Ventas del mes actual
-    // PostgreSQL: EXTRACT(MONTH FROM ...) en lugar de MONTH()
-    @Query("SELECT s FROM Sale s WHERE EXTRACT(MONTH FROM s.date) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM s.date) = EXTRACT(YEAR FROM CURRENT_DATE)")
+    // El rango permite que PostgreSQL use el indice de sales.date.
+    @Query(value = "SELECT s.* FROM sales s " +
+            "WHERE s.date >= date_trunc('month', CURRENT_DATE) " +
+            "AND s.date < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'",
+            nativeQuery = true)
     List<Sale> findSalesThisMonth();
 
     // Total recaudado
     @Query("SELECT COALESCE(SUM(s.total), 0) FROM Sale s WHERE s.status = 'COMPLETED'")
     Double getTotalRevenue();
 
-    // Total recaudado este mes
-    // PostgreSQL: EXTRACT en lugar de MONTH() y YEAR()
-    @Query("SELECT COALESCE(SUM(s.total), 0) FROM Sale s WHERE s.status = 'COMPLETED' " +
-           "AND EXTRACT(MONTH FROM s.date) = EXTRACT(MONTH FROM CURRENT_DATE) " +
-           "AND EXTRACT(YEAR FROM s.date) = EXTRACT(YEAR FROM CURRENT_DATE)")
+    // El mismo rango aprovecha el indice parcial de ventas completadas.
+    @Query(value = "SELECT COALESCE(SUM(s.total), 0) FROM sales s " +
+            "WHERE s.status = 'COMPLETED' " +
+            "AND s.date >= date_trunc('month', CURRENT_DATE) " +
+            "AND s.date < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'",
+            nativeQuery = true)
     Double getRevenueThisMonth();
 
     // Top productos más vendidos
