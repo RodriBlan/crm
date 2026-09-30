@@ -43,6 +43,7 @@ application-local.yml
 
 # Build
 target/
+.m2/
 *.jar
 
 # IDE

@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,8 +41,13 @@ public class SaleServiceImpl implements SaleService {
 
     // ─────────────── CREATE ───────────────
     @Override
-@Transactional
-public SaleResponse createSale(SaleRequest request) {
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "sales", allEntries = true),
+            @CacheEvict(cacheNames = "products", allEntries = true),
+            @CacheEvict(cacheNames = "stats", allEntries = true)
+    })
+    public SaleResponse createSale(SaleRequest request) {
 
     Client client = clientRepository.findById(request.getClientId())
             .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + request.getClientId()));
@@ -96,6 +104,11 @@ public SaleResponse createSale(SaleRequest request) {
     // ─────────────── DELETE ───────────────
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "sales", allEntries = true),
+            @CacheEvict(cacheNames = "products", allEntries = true),
+            @CacheEvict(cacheNames = "stats", allEntries = true)
+    })
     public void deleteSale(Long saleId) {
         Sale sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + saleId));
@@ -114,6 +127,7 @@ public SaleResponse createSale(SaleRequest request) {
 
     // ─────────────── GET ALL ───────────────
     @Override
+    @Cacheable(cacheNames = "sales", key = "'all'", sync = true)
     public List<SaleResponse> getAllSales() {
         return saleRepository.findAll().stream()
                 .map(saleMapper::toResponse)
@@ -122,6 +136,7 @@ public SaleResponse createSale(SaleRequest request) {
 
     // ─────────────── GET BY CLIENT ───────────────
     @Override
+    @Cacheable(cacheNames = "sales", key = "'client:' + #clientId", sync = true)
     public List<SaleResponse> getSalesByClient(Long clientId) {
         return saleRepository.findByClientIdOrderByDateDesc(clientId).stream()
                 .map(saleMapper::toResponse)
@@ -130,6 +145,7 @@ public SaleResponse createSale(SaleRequest request) {
 
     // ─────────────── GET BY ID ───────────────
     @Override
+    @Cacheable(cacheNames = "sales", key = "'id:' + #saleId", sync = true)
     public SaleResponse getSaleById(Long saleId) {
         Sale sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + saleId));
@@ -138,8 +154,13 @@ public SaleResponse createSale(SaleRequest request) {
 
     // ─────────────── UPDATE STATUS ───────────────
     @Override
-@Transactional
-public SaleResponse updateSaleStatus(Long saleId, String status) {
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "sales", allEntries = true),
+            @CacheEvict(cacheNames = "products", allEntries = true),
+            @CacheEvict(cacheNames = "stats", allEntries = true)
+    })
+    public SaleResponse updateSaleStatus(Long saleId, String status) {
     Sale sale = saleRepository.findById(saleId)
             .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + saleId));
 
