@@ -1,8 +1,7 @@
 import { getApiUrl } from "./config";
+import { queryClient } from "../lib/queryClient";
 
 const API_URL = getApiUrl();
-const CACHE_TTL = 5 * 60 * 1000;
-const getCache = new Map();
 
 const demoClients = [
   { id: 1, name: "Sofia Martinez", phone: "1134567890", email: "sofia@email.com", source: "Instagram", notes: "Interesada en compra mayorista.", registrationDate: "2026-06-12", active: true },
@@ -49,13 +48,6 @@ const demoSales = [
     ],
   },
 ];
-
-function responseFromCache(entry) {
-  return new Response(entry.body, {
-    status: entry.status,
-    headers: entry.headers,
-  });
-}
 
 function jsonResponse(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -145,29 +137,14 @@ function demoResponse(path) {
   return jsonResponse({ message: "Vista previa disponible solo para secciones principales." }, 404);
 }
 
-export function clearApiCache() {
-  getCache.clear();
-}
-
 export async function apiFetch(path, options = {}) {
   const token = sessionStorage.getItem("crm_token");
   const method = (options.method || "GET").toUpperCase();
-  const cacheKey = `${method}:${path}`;
 
   if (!token) {
     if (method === "GET") return demoResponse(path);
     requireLogin();
     return jsonResponse({ message: "Inicia sesion para realizar esta accion." }, 401);
-  }
-
-  if (method === "GET") {
-    const cached = getCache.get(cacheKey);
-    if (cached && Date.now() - cached.createdAt < CACHE_TTL) {
-      return responseFromCache(cached);
-    }
-    if (cached) getCache.delete(cacheKey);
-  } else {
-    clearApiCache();
   }
 
   const res = await fetch(`${API_URL}${path}`, {
@@ -182,22 +159,28 @@ export async function apiFetch(path, options = {}) {
   if (res.status === 401 || res.status === 403) {
     sessionStorage.removeItem("crm_token");
     sessionStorage.removeItem("crm_user");
-    clearApiCache();
+    queryClient.clear();
     requireLogin();
     return null;
   }
 
-  if (method === "GET" && res.ok) {
-    const body = await res.clone().text();
-    getCache.set(cacheKey, {
-      body,
-      status: res.status,
-      headers: { "Content-Type": res.headers.get("Content-Type") || "application/json" },
-      createdAt: Date.now(),
-    });
-  }
-
   return res;
+}
+
+export async function apiJson(path, options = {}) {
+  const res = await apiFetch(path, options);
+  if (!res) {
+    const error = new Error("La sesion ya no es valida.");
+    error.status = 401;
+    throw error;
+  }
+  if (!res.ok) {
+    const error = new Error(await readErrorMessage(res));
+    error.status = res.status;
+    throw error;
+  }
+  if (res.status === 204) return null;
+  return res.json();
 }
 
 export async function readErrorMessage(res) {

@@ -1,36 +1,37 @@
-import { useState, useEffect } from "react";
-import { apiFetch } from "../utils/apiFetch";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiJson } from "../utils/apiFetch";
 import Layout from "../components/Layout";
 import { S, Avatar, Button, PageHeader, StatusBadge, SkeletonRows, Pagination, ErrorBanner, fmtMoney } from "../components/ui";
 import SaleDetailDrawer from "../components/SaleDetailDrawer";
 import Icon from "../components/Icon";
+import { queryKeys } from "../lib/queryKeys";
 
 export default function History({ currentPage, onNavigate }) {
-  const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientSearch, setClientSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [sales, setSales] = useState([]);
   const [detail, setDetail] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [loadingClients, setLoadingClients] = useState(true);
-  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 9;
+  const clientsQuery = useQuery({
+    queryKey: queryKeys.clients.options,
+    queryFn: ({ signal }) => apiJson("/clients", { signal }),
+  });
+  const historyQuery = useQuery({
+    queryKey: queryKeys.sales.history(selectedClient?.id),
+    queryFn: ({ signal }) => apiJson(`/sales/client/${selectedClient.id}`, { signal }),
+    enabled: Boolean(selectedClient?.id),
+  });
+  const clients = Array.isArray(clientsQuery.data) ? clientsQuery.data : [];
+  const sales = Array.isArray(historyQuery.data) ? historyQuery.data : [];
+  const loading = Boolean(selectedClient) && historyQuery.isPending;
+  const loadingClients = clientsQuery.isPending;
+  const error = historyQuery.error;
 
-  useEffect(() => {
-    apiFetch("/clients").then((r) => r?.json()).then((d) => { if (Array.isArray(d)) setClients(d); }).catch(() => {}).finally(() => setLoadingClients(false));
-  }, []);
-
-  async function loadHistory(client) {
+  function loadHistory(client) {
     setSelectedClient(client); setClientSearch(client.name); setShowDropdown(false);
-    setSales([]); setError(null); setLoading(true); setPage(1);
-    try {
-      const res = await apiFetch(`/sales/client/${client.id}`);
-      if (!res?.ok) throw new Error("No se pudo cargar el historial.");
-      setSales(await res.json());
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+    setPage(1);
   }
 
   const filteredClients = clientSearch
@@ -104,7 +105,7 @@ export default function History({ currentPage, onNavigate }) {
           </div>
         )}
 
-        {error && <ErrorBanner message={error} />}
+        {error && <ErrorBanner message={error.message} onRetry={historyQuery.refetch} />}
 
         {/* Placeholder sin cliente */}
         {!selectedClient && !loading && (

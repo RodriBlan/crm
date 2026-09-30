@@ -1,8 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import { apiFetch, readErrorMessage } from "../utils/apiFetch";
+import { useState } from "react";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiFetch, apiJson, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
 import { S, Avatar, Button, Drawer, Metric, PageHeader, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
 import Icon from "../components/Icon";
+import { queryKeys } from "../lib/queryKeys";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 function ClientModal({ client, onClose, onSave }) {
   const [form, setForm] = useState({ name: client?.name ?? "", phone: client?.phone ?? "", email: client?.email ?? "", source: client?.source ?? "", notes: client?.notes ?? "" });
@@ -97,83 +100,67 @@ function DetailPanel({ client, onClose, onEdit }) {
 }
 
 export default function Clients({ currentPage, onNavigate }) {
-  const [clients, setClients] = useState([]);
-  const [summary, setSummary] = useState({ total: 0, active: 0, inactive: 0 });
-  const [totalElements, setTotalElements] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [modal, setModal] = useState(null);
   const [detail, setDetail] = useState(null);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 9;
-
-  const fetchClients = useCallback(async (signal) => {
-    setLoading(true); setError(null);
-    try {
+  const queryClient = useQueryClient();
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const clientsQuery = useQuery({
+    queryKey: queryKeys.clients.page(page, PAGE_SIZE, debouncedSearch),
+    queryFn: ({ signal }) => {
       const params = new URLSearchParams({
         page: String(page - 1),
         size: String(PAGE_SIZE),
-        search: search.trim(),
+        search: debouncedSearch,
       });
-      const res = await apiFetch(`/clients/page?${params}`, { signal });
-      if (!res?.ok) throw new Error("Error al cargar clientes.");
-      const data = await res.json();
-      setClients(data.content ?? []);
-      setTotalElements(data.totalElements ?? 0);
-      setTotalPages(Math.max(1, data.totalPages ?? 1));
-    } catch (err) {
-      if (err.name !== "AbortError") setError(err.message);
-    }
-    finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, [page, search]);
+      return apiJson(`/clients/page?${params}`, { signal });
+    },
+    placeholderData: keepPreviousData,
+  });
+  const summaryQuery = useQuery({
+    queryKey: queryKeys.clients.summary,
+    queryFn: ({ signal }) => apiJson("/clients/summary", { signal }),
+  });
+  const clients = clientsQuery.data?.content ?? [];
+  const summary = summaryQuery.data ?? { total: 0, active: 0, inactive: 0 };
+  const totalElements = clientsQuery.data?.totalElements ?? 0;
+  const totalPages = Math.max(1, clientsQuery.data?.totalPages ?? 1);
+  const loading = clientsQuery.isPending;
+  const summaryLoading = summaryQuery.isPending;
+  const error = clientsQuery.error;
 
-  const fetchSummary = useCallback(async () => {
-    const res = await apiFetch("/clients/summary");
-    if (res?.ok) setSummary(await res.json());
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => fetchClients(controller.signal), 250);
-    return () => { window.clearTimeout(timeoutId); controller.abort(); };
-  }, [fetchClients]);
-  useEffect(() => {
-    const timeoutId = window.setTimeout(fetchSummary, 0);
-    return () => window.clearTimeout(timeoutId);
-  }, [fetchSummary]);
+  function refreshClientData() {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.clients.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.sales.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats }),
+    ]);
+  }
 
   function handleSave(saved, isEdit) {
     if (detail?.id === saved.id) setDetail(saved);
     setModal(null);
-    fetchSummary();
+    refreshClientData();
     if (!isEdit && page !== 1) setPage(1);
-    else fetchClients();
   }
 
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar este cliente?")) return;
     try {
-      const res = await apiFetch(`/clients/${id}`, { method: "DELETE" });
-      if (!res?.ok) throw new Error("Error al eliminar el cliente.");
+      await apiJson(`/clients/${id}`, { method: "DELETE" });
       if (detail?.id === id) setDetail(null);
-      fetchSummary();
+      await refreshClientData();
       if (clients.length === 1 && page > 1) setPage((current) => current - 1);
-      else fetchClients();
     } catch (err) { alert(err.message); }
   }
 
   async function handleToggleStatus(id, active) {
     try {
-      const res = await apiFetch(`/clients/${id}/status?active=${active}`, { method: "PATCH" });
-      if (!res?.ok) return;
-      const updated = await res.json();
+      const updated = await apiJson(`/clients/${id}/status?active=${active}`, { method: "PATCH" });
       if (detail?.id === id) setDetail(updated);
-      fetchSummary();
-      fetchClients();
+      await refreshClientData();
     } catch (err) { alert(err.message); }
   }
 
@@ -191,11 +178,11 @@ export default function Clients({ currentPage, onNavigate }) {
 
         <div className="page-metric-strip">
           {kpis.map((k) => (
-            <Metric key={k.label} label={k.label} value={loading ? "-" : k.value} icon={k.icon} tone={k.label === "Inactivos" ? "neutral" : k.label === "% Activos" ? "warm" : "blue"} />
+            <Metric key={k.label} label={k.label} value={summaryLoading ? "-" : k.value} icon={k.icon} tone={k.label === "Inactivos" ? "neutral" : k.label === "% Activos" ? "warm" : "blue"} />
           ))}
         </div>
 
-        {error && <ErrorBanner message={error} onRetry={fetchClients} />}
+        {error && <ErrorBanner message={error.message} onRetry={clientsQuery.refetch} />}
 
         <div className="ui-data-panel">
           <div className="table-scroll">

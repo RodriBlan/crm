@@ -1,60 +1,45 @@
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Layout from "../components/Layout";
 import { Button, DataPanel, EmptyState, ErrorBanner, PageHeader } from "../components/ui";
-import { apiFetch, readErrorMessage } from "../utils/apiFetch";
+import { apiJson } from "../utils/apiFetch";
 import { useAuth } from "../hooks/useAuth";
+import { queryKeys } from "../lib/queryKeys";
 
 export default function AccessRequests({ currentPage, onNavigate }) {
   const { user } = useAuth();
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [savingId, setSavingId] = useState(null);
-
-  async function fetchRequests() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiFetch("/auth/access-requests");
-      if (!res?.ok) throw new Error(res ? await readErrorMessage(res) : "No se pudieron cargar las solicitudes.");
-      setRequests(await res.json());
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchRequests();
-  }, []);
-
-  async function updateRequest(id, action) {
-    setSavingId(id);
-    setError(null);
-    try {
-      const res = await apiFetch(`/auth/access-requests/${id}/${action}`, { method: "PATCH" });
-      if (!res?.ok) throw new Error(res ? await readErrorMessage(res) : "No se pudo actualizar la solicitud.");
-      setRequests((current) => current.filter((request) => request.id !== id));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSavingId(null);
-    }
-  }
-
   const isAdmin = user?.role === "ADMIN";
+  const queryClient = useQueryClient();
+  const requestsQuery = useQuery({
+    queryKey: queryKeys.accessRequests,
+    queryFn: ({ signal }) => apiJson("/auth/access-requests", { signal }),
+    enabled: isAdmin,
+  });
+  const updateMutation = useMutation({
+    mutationFn: ({ id, action }) => apiJson(`/auth/access-requests/${id}/${action}`, { method: "PATCH" }),
+    onSuccess: (_data, variables) => {
+      queryClient.setQueryData(queryKeys.accessRequests, (current = []) =>
+        current.filter((request) => request.id !== variables.id));
+    },
+  });
+  const requests = requestsQuery.data ?? [];
+  const loading = requestsQuery.isPending && isAdmin;
+  const error = requestsQuery.error || updateMutation.error;
+  const savingId = updateMutation.isPending ? updateMutation.variables?.id : null;
+
+  function updateRequest(id, action) {
+    updateMutation.mutate({ id, action });
+  }
 
   return (
     <Layout currentPage={currentPage} onNavigate={onNavigate} showSearch={false}>
       <div className="page-stack">
-        <PageHeader eyebrow="Administración" title="Usuarios" description="Revisá y resolvé solicitudes de acceso al espacio de trabajo." meta={`${requests.length} pendientes`} actions={<Button variant="secondary" icon="ti-refresh" onClick={fetchRequests} disabled={loading}>Actualizar</Button>} />
+        <PageHeader eyebrow="Administración" title="Usuarios" description="Revisá y resolvé solicitudes de acceso al espacio de trabajo." meta={`${requests.length} pendientes`} actions={<Button variant="secondary" icon="ti-refresh" onClick={() => requestsQuery.refetch()} disabled={requestsQuery.isFetching}>Actualizar</Button>} />
 
         {!isAdmin && (
           <ErrorBanner message="Solo un administrador puede gestionar usuarios." />
         )}
 
-        {error && <ErrorBanner message={error} onRetry={fetchRequests} />}
+        {error && <ErrorBanner message={error.message} onRetry={() => requestsQuery.refetch()} />}
 
         <DataPanel title="Solicitudes pendientes" description="Nuevas cuentas que requieren una decisión del administrador.">
           {loading ? (

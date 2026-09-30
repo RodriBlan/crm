@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from "react";
-import { clearApiCache } from "../utils/apiFetch";
 import { getApiUrl } from "../utils/config";
+import { queryClient } from "../lib/queryClient";
 
 const AuthContext = createContext(null);
 const API_URL = getApiUrl();
@@ -32,9 +32,9 @@ export function AuthProvider({ children }) {
       });
     } catch (err) {
       if (err.name === "AbortError") {
-        throw new Error("El servidor esta tardando en responder. Espera unos segundos y volve a intentar.");
+        throw new Error("El servidor esta tardando en responder. Espera unos segundos y volve a intentar.", { cause: err });
       }
-      throw new Error("No se pudo conectar con el servidor. Revisa tu conexion e intenta de nuevo.");
+      throw new Error("No se pudo conectar con el servidor. Revisa tu conexion e intenta de nuevo.", { cause: err });
     } finally {
       timeout.clear();
     }
@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
 
     sessionStorage.setItem("crm_token", data.token);
     sessionStorage.setItem("crm_user", JSON.stringify(nextUser));
-    clearApiCache();
+    queryClient.clear();
     setToken(data.token);
     setUser(nextUser);
     return data;
@@ -74,9 +74,9 @@ export function AuthProvider({ children }) {
       });
     } catch (err) {
       if (err.name === "AbortError") {
-        throw new Error("El servidor esta tardando en responder. Espera unos segundos y volve a intentar.");
+        throw new Error("El servidor esta tardando en responder. Espera unos segundos y volve a intentar.", { cause: err });
       }
-      throw new Error("No se pudo conectar con el servidor. Revisa tu conexion e intenta de nuevo.");
+      throw new Error("No se pudo conectar con el servidor. Revisa tu conexion e intenta de nuevo.", { cause: err });
     } finally {
       timeout.clear();
     }
@@ -98,7 +98,7 @@ export function AuthProvider({ children }) {
   function logout() {
     sessionStorage.removeItem("crm_token");
     sessionStorage.removeItem("crm_user");
-    clearApiCache();
+    queryClient.clear();
     setToken(null);
     setUser(null);
   }
@@ -110,6 +110,8 @@ export function AuthProvider({ children }) {
   );
 }
 
+// The provider and its hook intentionally live together as one authentication module.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }

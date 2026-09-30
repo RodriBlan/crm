@@ -1,36 +1,55 @@
-import { useState, useEffect } from "react";
-import { apiFetch, readErrorMessage } from "../utils/apiFetch";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiJson } from "../utils/apiFetch";
 import Layout from "../components/Layout";
 import { S, Button, PageHeader, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
 import Icon from "../components/Icon";
+import { queryKeys } from "../lib/queryKeys";
 
 function CategoryManager({ onClose }) {
-  const [categories, setCategories] = useState([]);
   const [newName, setNewName] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  async function fetchCategories() {
-    const res = await apiFetch("/categories");
-    if (res?.ok) setCategories(await res.json());
-  }
-  useEffect(() => { fetchCategories(); }, []);
+  const queryClient = useQueryClient();
+  const categoriesQuery = useQuery({
+    queryKey: queryKeys.products.categories,
+    queryFn: ({ signal }) => apiJson("/categories", { signal }),
+  });
+  const categories = categoriesQuery.data ?? [];
+  const createCategory = useMutation({
+    mutationFn: (description) => apiJson("/categories", {
+      method: "POST",
+      body: JSON.stringify({ description }),
+    }),
+    onSuccess: () => {
+      setNewName("");
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.categories });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+    },
+  });
+  const deleteCategory = useMutation({
+    mutationFn: (id) => apiJson(`/categories/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.categories });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+    },
+  });
+  const loading = createCategory.isPending;
 
   async function handleCreate() {
     if (!newName.trim()) { setError("Ingresá un nombre."); return; }
-    setLoading(true); setError(null);
+    setError(null);
     try {
-      const res = await apiFetch("/categories", { method: "POST", body: JSON.stringify({ description: newName.trim() }) });
-      if (!res?.ok) { setError(await readErrorMessage(res)); return; }
-      setNewName(""); fetchCategories();
-    } catch { setError("Error al crear."); }
-    finally { setLoading(false); }
+      await createCategory.mutateAsync(newName.trim());
+    } catch (requestError) { setError(requestError.message || "Error al crear."); }
   }
 
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar esta categoría?")) return;
-    const res = await apiFetch(`/categories/${id}`, { method: "DELETE" });
-    if (res?.ok) fetchCategories();
+    try {
+      await deleteCategory.mutateAsync(id);
+    } catch (requestError) {
+      setError(requestError.message);
+    }
   }
 
   return (
@@ -67,25 +86,39 @@ function CategoryManager({ onClose }) {
 
 function ProductModal({ product, onClose, onSave }) {
   const [form, setForm] = useState({ name: product?.name ?? "", description: product?.description ?? "", price: product?.price ?? "", stock: product?.stock ?? "", descuento: product?.descuento ?? 0, categoryId: product?.categoryId ?? "" });
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    apiFetch("/categories").then((r) => r?.json()).then((d) => { if (Array.isArray(d)) setCategories(d); }).catch(() => {});
-  }, []);
+  const queryClient = useQueryClient();
+  const categoriesQuery = useQuery({
+    queryKey: queryKeys.products.categories,
+    queryFn: ({ signal }) => apiJson("/categories", { signal }),
+  });
+  const categories = categoriesQuery.data ?? [];
+  const saveProduct = useMutation({
+    mutationFn: ({ body, method, path }) => apiJson(path, {
+      method,
+      body: JSON.stringify(body),
+    }),
+    onSuccess: (saved) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sales.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+      onSave(saved);
+    },
+  });
+  const loading = saveProduct.isPending;
 
   async function handleSubmit() {
     if (!form.name || !form.price) { setError("Nombre y precio son obligatorios."); return; }
-    setLoading(true); setError(null);
+    setError(null);
     try {
       const method = product ? "PATCH" : "POST";
       const body = { ...form, price: parseFloat(form.price), stock: parseInt(form.stock) || 0, descuento: parseFloat(form.descuento) || 0, categoryId: form.categoryId ? parseInt(form.categoryId) : null };
-      const res = await apiFetch(product ? `/products/${product.id}` : "/products", { method, body: JSON.stringify(body) });
-      if (!res?.ok) { setError(await readErrorMessage(res)); return; }
-      onSave(await res.json(), !!product);
-    } catch { setError("Error al guardar."); }
-    finally { setLoading(false); }
+      await saveProduct.mutateAsync({
+        body,
+        method,
+        path: product ? `/products/${product.id}` : "/products",
+      });
+    } catch (requestError) { setError(requestError.message || "Error al guardar."); }
   }
 
   return (
@@ -118,47 +151,45 @@ function ProductModal({ product, onClose, onSave }) {
 }
 
 export default function Products({ currentPage, onNavigate }) {
-  const [products, setProducts] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [modal, setModal] = useState(null);
   const [showCategories, setShowCategories] = useState(false);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 9;
-
-  async function fetchProducts() {
-    setLoading(true); setError(null);
-    try {
-      const res = await apiFetch("/products");
-      if (!res?.ok) throw new Error("Error al cargar productos.");
-      const data = await res.json();
-      setProducts(data.content ?? data);
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
-  }
-
-  useEffect(() => { fetchProducts(); }, []);
-  useEffect(() => {
+  const queryClient = useQueryClient();
+  const productsQuery = useQuery({
+    queryKey: queryKeys.products.all,
+    queryFn: ({ signal }) => apiJson("/products", { signal }),
+  });
+  const products = useMemo(() => {
+    const productData = productsQuery.data?.content ?? productsQuery.data;
+    return Array.isArray(productData) ? productData : [];
+  }, [productsQuery.data]);
+  const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    setFiltered(q ? products.filter((p) => p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)) : products);
-    setPage(1);
+    return q ? products.filter((p) => p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)) : products;
   }, [search, products]);
+  const deleteProduct = useMutation({
+    mutationFn: (id) => apiJson(`/products/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+    },
+  });
+  const loading = productsQuery.isPending;
+  const error = productsQuery.error;
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  function handleSave(saved, isEdit) {
-    setProducts((prev) => isEdit ? prev.map((p) => p.id === saved.id ? saved : p) : [...prev, saved]);
+  function handleSave() {
     setModal(null);
   }
 
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar este producto?")) return;
     try {
-      await apiFetch(`/products/${id}`, { method: "DELETE" });
-      setProducts((prev) => prev.filter((p) => p.id !== id));
+      await deleteProduct.mutateAsync(id);
     } catch (err) { alert(err.message); }
   }
 
@@ -175,11 +206,11 @@ export default function Products({ currentPage, onNavigate }) {
   }
 
   return (
-    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar producto..." searchValue={search} onSearch={setSearch}>
+    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar producto..." searchValue={search} onSearch={(value) => { setSearch(value); setPage(1); }}>
       <div className="page-stack">
         <PageHeader eyebrow="Catálogo" title="Productos" description="Precios, disponibilidad y categorías de tu oferta." meta={loading ? "Cargando" : `${products.length} registros`} actions={<><Button variant="secondary" icon="ti-category" onClick={() => setShowCategories(true)}>Categorías</Button><Button icon="ti-plus" onClick={() => setModal("create")}>Nuevo producto</Button></>} />
 
-        {error && <ErrorBanner message={error} onRetry={fetchProducts} />}
+        {error && <ErrorBanner message={error.message} onRetry={productsQuery.refetch} />}
 
         <div className="ui-data-panel">
           <div className="table-scroll">

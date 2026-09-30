@@ -1,29 +1,49 @@
-import { useState, useEffect, useCallback } from "react";
-import { apiFetch, readErrorMessage } from "../utils/apiFetch";
+import { useState } from "react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiJson } from "../utils/apiFetch";
 import Layout from "../components/Layout";
 import { S, Avatar, Button, PageHeader, StatusBadge, SkeletonRows, Pagination, ErrorBanner, FormField, fmtMoney } from "../components/ui";
 import SaleDetailDrawer from "../components/SaleDetailDrawer";
 import Icon from "../components/Icon";
+import { queryKeys } from "../lib/queryKeys";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 // Este es el fragmento del NewSaleModal con el buscador de productos mejorado.
 // Reemplazá el componente NewSaleModal completo en Sales.jsx con este.
 
 export function NewSaleModal({ onClose, onSave }) {
-  const [clients, setClients] = useState([]);
-  const [products, setProducts] = useState([]);
   const [clientId, setClientId] = useState("");
   const [clientSearch, setClientSearch] = useState("");
   // ← NUEVO: búsqueda de producto por item
   const [productSearches, setProductSearches] = useState([""]);
   const [items, setItems] = useState([{ productId: "", quantity: 1 }]);
   const [notes, setNotes] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    apiFetch("/clients").then((r) => r?.json()).then((d) => Array.isArray(d) && setClients(d)).catch(() => {});
-    apiFetch("/products").then((r) => r?.json()).then((d) => { const l = d?.content ?? d; if (Array.isArray(l)) setProducts(l); }).catch(() => {});
-  }, []);
+  const queryClient = useQueryClient();
+  const clientsQuery = useQuery({
+    queryKey: queryKeys.clients.options,
+    queryFn: ({ signal }) => apiJson("/clients", { signal }),
+  });
+  const productsQuery = useQuery({
+    queryKey: queryKeys.products.all,
+    queryFn: ({ signal }) => apiJson("/products", { signal }),
+  });
+  const clients = Array.isArray(clientsQuery.data) ? clientsQuery.data : [];
+  const productData = productsQuery.data?.content ?? productsQuery.data;
+  const products = Array.isArray(productData) ? productData : [];
+  const saleMutation = useMutation({
+    mutationFn: (payload) => apiJson("/sales", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+    onSuccess: (sale) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.sales.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+      onSave(sale);
+    },
+  });
+  const loading = saleMutation.isPending;
 
   const filteredClients = clientSearch
     ? clients.filter((c) => c.name.toLowerCase().includes(clientSearch.toLowerCase()))
@@ -79,21 +99,17 @@ export function NewSaleModal({ onClose, onSave }) {
         return;
       }
     }
-    setLoading(true); setError(null);
+    setError(null);
     try {
-      const res = await apiFetch("/sales", {
-        method: "POST",
-        body: JSON.stringify({
-          clientId: parseInt(clientId),
-          notes, status,
-          items: items.map((i) => ({ productId: parseInt(i.productId), quantity: parseInt(i.quantity) })),
-        }),
+      await saleMutation.mutateAsync({
+        clientId: parseInt(clientId),
+        notes,
+        status,
+        items: items.map((i) => ({ productId: parseInt(i.productId), quantity: parseInt(i.quantity) })),
       });
-      if (!res) return;
-      if (!res.ok) { setError(await readErrorMessage(res)); return; }
-      onSave(await res.json());
-    } catch { setError("Error al conectarse con el servidor."); }
-    finally { setLoading(false); }
+    } catch (requestError) {
+      setError(requestError.message || "Error al conectarse con el servidor.");
+    }
   }
 
   return (
@@ -261,91 +277,78 @@ export function NewSaleModal({ onClose, onSave }) {
 
 
 export default function Sales({ currentPage, onNavigate }) {
-  const [sales, setSales] = useState([]);
-  const [summary, setSummary] = useState({ totalVolume: 0, pending: 0 });
-  const [totalElements, setTotalElements] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [modal, setModal] = useState(false);
   const [detail, setDetail] = useState(null);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 9;
-
-  const fetchSales = useCallback(async (signal) => {
-    setLoading(true); setError(null);
-    try {
+  const queryClient = useQueryClient();
+  const debouncedSearch = useDebouncedValue(search.trim());
+  const status = statusFilter === "ALL" ? "" : statusFilter;
+  const salesQuery = useQuery({
+    queryKey: queryKeys.sales.page(page, PAGE_SIZE, debouncedSearch, status),
+    queryFn: ({ signal }) => {
       const params = new URLSearchParams({
         page: String(page - 1),
         size: String(PAGE_SIZE),
-        search: search.trim(),
+        search: debouncedSearch,
       });
-      if (statusFilter !== "ALL") params.set("status", statusFilter);
-      const res = await apiFetch(`/sales/page?${params}`, { signal });
-      if (!res?.ok) throw new Error("Error al cargar ventas.");
-      const data = await res.json();
-      setSales(data.content ?? []);
-      setTotalElements(data.totalElements ?? 0);
-      setTotalPages(Math.max(1, data.totalPages ?? 1));
-    } catch (err) {
-      if (err.name !== "AbortError") setError(err.message);
-    }
-    finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, [page, search, statusFilter]);
+      if (status) params.set("status", status);
+      return apiJson(`/sales/page?${params}`, { signal });
+    },
+    placeholderData: keepPreviousData,
+  });
+  const summaryQuery = useQuery({
+    queryKey: queryKeys.sales.summary,
+    queryFn: ({ signal }) => apiJson("/sales/summary", { signal }),
+  });
+  const sales = salesQuery.data?.content ?? [];
+  const summary = summaryQuery.data ?? { totalVolume: 0, pending: 0 };
+  const totalElements = salesQuery.data?.totalElements ?? 0;
+  const totalPages = Math.max(1, salesQuery.data?.totalPages ?? 1);
+  const loading = salesQuery.isPending;
+  const error = salesQuery.error;
 
-  const fetchSummary = useCallback(async () => {
-    const res = await apiFetch("/sales/summary");
-    if (res?.ok) setSummary(await res.json());
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => fetchSales(controller.signal), 250);
-    return () => { window.clearTimeout(timeoutId); controller.abort(); };
-  }, [fetchSales]);
-  useEffect(() => {
-    const timeoutId = window.setTimeout(fetchSummary, 0);
-    return () => window.clearTimeout(timeoutId);
-  }, [fetchSummary]);
+  function refreshSaleData() {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.sales.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.stats }),
+    ]);
+  }
 
   function handleSave() {
     setModal(false);
-    fetchSummary();
     if (page !== 1) setPage(1);
-    else fetchSales();
   }
 
   async function openDetail(saleId) {
     try {
-      const res = await apiFetch(`/sales/${saleId}`);
-      if (res?.ok) setDetail(await res.json());
-    } catch (err) { setError(err.message); }
+      const sale = await queryClient.fetchQuery({
+        queryKey: queryKeys.sales.detail(saleId),
+        queryFn: ({ signal }) => apiJson(`/sales/${saleId}`, { signal }),
+      });
+      setDetail(sale);
+    } catch (err) { alert(err.message); }
   }
 
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar esta venta? Se devolverá el stock.")) return;
     try {
-      const res = await apiFetch(`/sales/${id}`, { method: "DELETE" });
-      if (!res?.ok) throw new Error("Error al eliminar.");
+      await apiJson(`/sales/${id}`, { method: "DELETE" });
       if (detail?.id === id) setDetail(null);
-      fetchSummary();
+      await refreshSaleData();
       if (sales.length === 1 && page > 1) setPage((current) => current - 1);
-      else fetchSales();
     } catch (err) { alert(err.message); }
   }
 
   async function handleStatusChange(id, status) {
     try {
-      const res = await apiFetch(`/sales/${id}/status?status=${status}`, { method: "PATCH" });
-      if (!res?.ok) { alert(await readErrorMessage(res)); return; }
-      const updated = await res.json();
+      const updated = await apiJson(`/sales/${id}/status?status=${status}`, { method: "PATCH" });
       if (detail?.id === id) setDetail(updated);
-      fetchSummary();
-      fetchSales();
+      queryClient.setQueryData(queryKeys.sales.detail(id), updated);
+      await refreshSaleData();
     } catch (err) { alert(err.message); }
   }
 
@@ -378,7 +381,7 @@ export default function Sales({ currentPage, onNavigate }) {
           </select>
         </div>
 
-        {error && <ErrorBanner message={error} onRetry={fetchSales} />}
+        {error && <ErrorBanner message={error.message} onRetry={salesQuery.refetch} />}
 
         <div className="ui-data-panel">
           <div className="table-scroll">

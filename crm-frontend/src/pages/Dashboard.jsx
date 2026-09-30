@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
-import { apiFetch } from "../utils/apiFetch";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiJson } from "../utils/apiFetch";
 import Layout from "../components/Layout";
 import { Avatar, Button, DataPanel, EmptyState, ErrorBanner, PageHeader, SkeletonRows, fmtMoney, fmtNum } from "../components/ui";
 import { NewSaleModal } from "./Sales";
 import Icon from "../components/Icon";
+import { queryKeys } from "../lib/queryKeys";
 
 function SummaryMetric({ icon, label, value, detail }) {
   return (
@@ -15,26 +17,12 @@ function SummaryMetric({ icon, label, value, detail }) {
 }
 
 export default function Dashboard({ currentPage, onNavigate }) {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showSaleModal, setShowSaleModal] = useState(false);
-
-  async function fetchStats() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await apiFetch("/stats");
-      if (!res?.ok) throw new Error("No se pudieron cargar las estadísticas.");
-      setStats(await res.json());
-    } catch (requestError) {
-      setError(requestError.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => { fetchStats(); }, []);
+  const queryClient = useQueryClient();
+  const { data: stats, isPending: loading, error, refetch } = useQuery({
+    queryKey: queryKeys.stats,
+    queryFn: ({ signal }) => apiJson("/stats", { signal }),
+  });
 
   return (
     <Layout currentPage={currentPage} onNavigate={onNavigate} showSearch={false}>
@@ -46,7 +34,7 @@ export default function Dashboard({ currentPage, onNavigate }) {
           actions={<Button icon="ti-plus" onClick={() => setShowSaleModal(true)}>Nueva venta</Button>}
         />
 
-        {error && <ErrorBanner message={error} onRetry={fetchStats} />}
+        {error && <ErrorBanner message={error.message} onRetry={refetch} />}
 
         <section className="dashboard-overview" aria-label="Indicadores principales">
           <article className="dashboard-primary-metric">
@@ -116,7 +104,10 @@ export default function Dashboard({ currentPage, onNavigate }) {
         </div>
       </div>
 
-      {showSaleModal && <NewSaleModal onClose={() => setShowSaleModal(false)} onSave={() => { setShowSaleModal(false); fetchStats(); }} />}
+      {showSaleModal && <NewSaleModal onClose={() => setShowSaleModal(false)} onSave={() => {
+        setShowSaleModal(false);
+        queryClient.invalidateQueries({ queryKey: queryKeys.stats });
+      }} />}
     </Layout>
   );
 }
