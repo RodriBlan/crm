@@ -3,6 +3,9 @@ package com.uade.tpo.demo.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -69,9 +72,18 @@ public class SaleServiceImpl implements SaleService {
     List<SaleItem> items = new ArrayList<>();
     double total = 0.0;
 
+    Map<Long, Product> productsById = productRepository.findAllById(
+            request.getItems().stream()
+                    .map(SaleItemRequest::getProductId)
+                    .distinct()
+                    .toList()
+    ).stream().collect(Collectors.toMap(Product::getId, Function.identity()));
+
     for (SaleItemRequest itemReq : request.getItems()) {
-        Product product = productRepository.findById(itemReq.getProductId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + itemReq.getProductId()));
+        Product product = productsById.get(itemReq.getProductId());
+        if (product == null) {
+            throw new RuntimeException("Producto no encontrado con ID: " + itemReq.getProductId());
+        }
 
         if (product.getStock() < itemReq.getQuantity()) {
             throw new RuntimeException("Stock insuficiente para el producto: " + product.getName()
@@ -81,7 +93,6 @@ public class SaleServiceImpl implements SaleService {
         // Solo descontar stock si la venta es COMPLETED
         if (saleStatus == SaleStatus.COMPLETED) {
             product.setStock(product.getStock() - itemReq.getQuantity());
-            productRepository.save(product);
         }
 
         SaleItem item = new SaleItem();
@@ -118,7 +129,6 @@ public class SaleServiceImpl implements SaleService {
             for (SaleItem item : sale.getItems()) {
                 Product product = item.getProduct();
                 product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
             }
         }
 
@@ -182,7 +192,6 @@ public class SaleServiceImpl implements SaleService {
                         + product.getName() + ". Disponible: " + product.getStock());
             }
             product.setStock(product.getStock() - item.getQuantity());
-            productRepository.save(product);
         }
     }
 
@@ -191,7 +200,6 @@ public class SaleServiceImpl implements SaleService {
         for (SaleItem item : sale.getItems()) {
             Product product = item.getProduct();
             product.setStock(product.getStock() + item.getQuantity());
-            productRepository.save(product);
         }
     }
 

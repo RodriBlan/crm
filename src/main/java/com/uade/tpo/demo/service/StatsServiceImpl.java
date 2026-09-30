@@ -1,9 +1,8 @@
 package com.uade.tpo.demo.service;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.uade.tpo.demo.entity.dto.StatsResponse;
@@ -27,14 +26,11 @@ public class StatsServiceImpl implements StatsService {
         stats.setTotalRevenue(saleRepository.getTotalRevenue());
 
         // Mes actual
-        List<?> salesThisMonth = saleRepository.findSalesThisMonth();
-        stats.setSalesThisMonth((long) salesThisMonth.size());
+        stats.setSalesThisMonth(saleRepository.countSalesThisMonth());
         stats.setRevenueThisMonth(saleRepository.getRevenueThisMonth());
 
         // Top 5 productos
-        List<Object[]> topProductsRaw = saleRepository.findTopProducts();
-        List<TopProductDTO> topProducts = topProductsRaw.stream()
-                .limit(5)
+        var topProducts = saleRepository.findTopProducts(PageRequest.of(0, 5)).stream()
                 .map(row -> {
                     TopProductDTO dto = new TopProductDTO();
                     dto.setProductId(((Number) row[0]).longValue());
@@ -47,9 +43,7 @@ public class StatsServiceImpl implements StatsService {
         stats.setTopProducts(topProducts);
 
         // Top 5 clientes
-        List<Object[]> topClientsRaw = saleRepository.findTopClients();
-        List<TopClientDTO> topClients = topClientsRaw.stream()
-                .limit(5)
+        var topClients = saleRepository.findTopClients(PageRequest.of(0, 5)).stream()
                 .map(row -> {
                     TopClientDTO dto = new TopClientDTO();
                     dto.setClientId(((Number) row[0]).longValue());
