@@ -7,11 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.uade.tpo.demo.entity.Client;
 import com.uade.tpo.demo.entity.dto.ClientRequest;
 import com.uade.tpo.demo.entity.dto.ClientResponse;
+import com.uade.tpo.demo.entity.dto.ClientSummaryResponse;
 import com.uade.tpo.demo.mapper.ClientMapper;
 import com.uade.tpo.demo.repository.ClientRepository;
 
@@ -111,5 +114,19 @@ public class ClientServiceImpl implements ClientService {
         return clientRepository.findByActive(true).stream()
                 .map(ClientMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    @Cacheable(cacheNames = "clients", key = "'page:' + #search + ':' + #pageable", sync = true)
+    public Page<ClientResponse> getClientsPage(String search, Pageable pageable) {
+        return clientRepository.searchByName(search, pageable).map(ClientMapper::toResponse);
+    }
+
+    @Override
+    @Cacheable(cacheNames = "clients", key = "'summary'", sync = true)
+    public ClientSummaryResponse getSummary() {
+        long total = clientRepository.count();
+        long active = clientRepository.countByActive(true);
+        return new ClientSummaryResponse(total, active, total - active);
     }
 }

@@ -4,16 +4,24 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
+import com.uade.tpo.demo.entity.SaleStatus;
 import com.uade.tpo.demo.entity.dto.SaleRequest;
 import com.uade.tpo.demo.entity.dto.SaleResponse;
+import com.uade.tpo.demo.entity.dto.SaleSummaryResponse;
 import com.uade.tpo.demo.service.SaleService;
 
 @RestController
@@ -35,6 +43,22 @@ public class SaleController {
     @GetMapping
     public ResponseEntity<List<SaleResponse>> getAllSales() {
         return ResponseEntity.ok(saleService.getAllSales());
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<Page<SaleResponse>> getSalesPage(
+            @RequestParam(defaultValue = "") @Size(max = 120) String search,
+            @RequestParam(required = false) @Pattern(regexp = "COMPLETED|CANCELLED|PENDING") String status,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "9") @Min(1) @Max(100) int size) {
+        SaleStatus saleStatus = status == null ? null : SaleStatus.valueOf(status);
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"));
+        return ResponseEntity.ok(saleService.getSalesPage(search.trim(), saleStatus, pageable));
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<SaleSummaryResponse> getSummary() {
+        return ResponseEntity.ok(saleService.getSummary());
     }
 
     // GET /sales/{id}

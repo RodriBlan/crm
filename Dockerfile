@@ -16,6 +16,14 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
-EXPOSE 4002
+# Render espera por defecto el puerto 10000. La aplicacion local conserva
+# el puerto 4002 cuando se ejecuta fuera de Docker.
+ENV PORT=10000 \
+    SPRING_LAZY_INITIALIZATION=true \
+    JPA_REPOSITORIES_BOOTSTRAP_MODE=lazy \
+    JPA_DDL=none \
+    HIBERNATE_BOOT_METADATA_ACCESS=false
 
-CMD ["java", "-jar", "app.jar"]
+EXPOSE 10000
+
+CMD ["java", "-XX:TieredStopAtLevel=1", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]

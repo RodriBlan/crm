@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
 import { S, Avatar, Button, PageHeader, StatusBadge, SkeletonRows, Pagination, ErrorBanner, FormField, fmtMoney } from "../components/ui";
@@ -262,7 +262,9 @@ export function NewSaleModal({ onClose, onSave }) {
 
 export default function Sales({ currentPage, onNavigate }) {
   const [sales, setSales] = useState([]);
-  const [filtered, setFiltered] = useState([]);
+  const [summary, setSummary] = useState({ totalVolume: 0, pending: 0 });
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
@@ -272,36 +274,67 @@ export default function Sales({ currentPage, onNavigate }) {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 9;
 
-  async function fetchSales() {
+  const fetchSales = useCallback(async (signal) => {
     setLoading(true); setError(null);
     try {
-      const res = await apiFetch("/sales");
+      const params = new URLSearchParams({
+        page: String(page - 1),
+        size: String(PAGE_SIZE),
+        search: search.trim(),
+      });
+      if (statusFilter !== "ALL") params.set("status", statusFilter);
+      const res = await apiFetch(`/sales/page?${params}`, { signal });
       if (!res?.ok) throw new Error("Error al cargar ventas.");
-      setSales(await res.json());
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+      const data = await res.json();
+      setSales(data.content ?? []);
+      setTotalElements(data.totalElements ?? 0);
+      setTotalPages(Math.max(1, data.totalPages ?? 1));
+    } catch (err) {
+      if (err.name !== "AbortError") setError(err.message);
+    }
+    finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }, [page, search, statusFilter]);
+
+  const fetchSummary = useCallback(async () => {
+    const res = await apiFetch("/sales/summary");
+    if (res?.ok) setSummary(await res.json());
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => fetchSales(controller.signal), 250);
+    return () => { window.clearTimeout(timeoutId); controller.abort(); };
+  }, [fetchSales]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(fetchSummary, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [fetchSummary]);
+
+  function handleSave() {
+    setModal(false);
+    fetchSummary();
+    if (page !== 1) setPage(1);
+    else fetchSales();
   }
 
-  useEffect(() => { fetchSales(); }, []);
-  useEffect(() => {
-    let list = sales;
-    if (statusFilter !== "ALL") list = list.filter((s) => s.status === statusFilter);
-    if (search) list = list.filter((s) => s.clientName?.toLowerCase().includes(search.toLowerCase()));
-    setFiltered(list); setPage(1);
-  }, [search, statusFilter, sales]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  function handleSave(saved) { setSales((p) => [saved, ...p]); setModal(false); }
+  async function openDetail(saleId) {
+    try {
+      const res = await apiFetch(`/sales/${saleId}`);
+      if (res?.ok) setDetail(await res.json());
+    } catch (err) { setError(err.message); }
+  }
 
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar esta venta? Se devolverá el stock.")) return;
     try {
       const res = await apiFetch(`/sales/${id}`, { method: "DELETE" });
       if (!res?.ok) throw new Error("Error al eliminar.");
-      setSales((p) => p.filter((s) => s.id !== id));
       if (detail?.id === id) setDetail(null);
+      fetchSummary();
+      if (sales.length === 1 && page > 1) setPage((current) => current - 1);
+      else fetchSales();
     } catch (err) { alert(err.message); }
   }
 
@@ -310,23 +343,21 @@ export default function Sales({ currentPage, onNavigate }) {
       const res = await apiFetch(`/sales/${id}/status?status=${status}`, { method: "PATCH" });
       if (!res?.ok) { alert(await readErrorMessage(res)); return; }
       const updated = await res.json();
-      setSales((p) => p.map((s) => s.id === id ? updated : s));
       if (detail?.id === id) setDetail(updated);
+      fetchSummary();
+      fetchSales();
     } catch (err) { alert(err.message); }
   }
 
-  const totalVolume = sales.filter((s) => s.status === "COMPLETED").reduce((acc, s) => acc + (s.total ?? 0), 0);
-  const pending = sales.filter((s) => s.status === "PENDING").length;
-
   return (
-    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar por cliente..." searchValue={search} onSearch={setSearch}>
+    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar por cliente..." searchValue={search} onSearch={(value) => { setSearch(value); setPage(1); }}>
       <div className="page-stack">
-        <PageHeader eyebrow="Operaciones" title="Ventas" description="Seguimiento de transacciones, importes y estados." actions={<Button icon="ti-plus" onClick={() => setModal(true)}>Nueva venta</Button>} meta={`${filtered.length} visibles`} />
+        <PageHeader eyebrow="Operaciones" title="Ventas" description="Seguimiento de transacciones, importes y estados." actions={<Button icon="ti-plus" onClick={() => setModal(true)}>Nueva venta</Button>} meta={`${totalElements} resultados`} />
         <div className="sales-summary-bar">
           <div className="page-inline-metrics">
             {[
-              { label: "Volumen total", value: fmtMoney(totalVolume), color: "#172033" },
-              { label: "Pendientes", value: pending, color: "#2563EB" },
+              { label: "Volumen total", value: fmtMoney(summary.totalVolume), color: "#172033" },
+              { label: "Pendientes", value: summary.pending, color: "#2563EB" },
             ].map((k) => (
               <div className="page-inline-metric" key={k.label}>
                 <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "500" }}>{k.label}</div>
@@ -338,7 +369,7 @@ export default function Sales({ currentPage, onNavigate }) {
 
         <div className="filter-bar">
           <Icon name="filter" size={16} />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             style={{ ...S.input, width: "auto", appearance: "none", border: "none", background: "none", padding: "0", fontSize: "13px", color: "#172033", cursor: "pointer" }}>
             <option value="ALL">Todos los estados</option>
             <option value="COMPLETED">Completadas</option>
@@ -361,13 +392,13 @@ export default function Sales({ currentPage, onNavigate }) {
               </thead>
               <tbody>
                 {loading ? <SkeletonRows cols={6} rows={6} /> :
-                  paginated.length === 0 ? (
+                  sales.length === 0 ? (
                     <tr><td colSpan={6} style={{ ...S.td, textAlign: "center", color: "#64748B", padding: "40px" }}>No hay ventas que mostrar.</td></tr>
-                  ) : paginated.map((sale) => (
+                  ) : sales.map((sale) => (
                     <tr key={sale.id} style={{ cursor: "pointer" }}
                       onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
                       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                      onClick={() => setDetail(sale)}>
+                      onClick={() => openDetail(sale.id)}>
                       <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px", color: "#64748B" }}>#{sale.id}</td>
                       <td style={{ ...S.td, fontSize: "12px", color: "#64748B", whiteSpace: "nowrap" }}>{new Date(sale.date).toLocaleDateString("es-AR")}</td>
                       <td style={S.td}>
@@ -410,7 +441,7 @@ export default function Sales({ currentPage, onNavigate }) {
             </table>
           </div>
           <div className="table-footer">
-            <span style={{ fontSize: "12px", color: "#64748B" }}>{filtered.length} ventas</span>
+            <span style={{ fontSize: "12px", color: "#64748B" }}>{totalElements} ventas</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>

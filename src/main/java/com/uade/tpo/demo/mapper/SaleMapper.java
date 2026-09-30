@@ -31,6 +31,18 @@ public class SaleMapper {
         return r;
     }
 
+    public SaleResponse toListResponse(Sale sale) {
+        SaleResponse r = new SaleResponse();
+        r.setId(sale.getId());
+        r.setDate(sale.getDate());
+        r.setTotal(sale.getTotal());
+        r.setStatus(sale.getStatus());
+        r.setNotes(sale.getNotes());
+        r.setClientId(sale.getClient().getId());
+        r.setClientName(sale.getClient().getName());
+        return r;
+    }
+
     public SaleItemResponse toItemResponse(SaleItem item) {
         SaleItemResponse r = new SaleItemResponse();
         r.setId(item.getId());

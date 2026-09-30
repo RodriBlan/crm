@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { apiFetch, readErrorMessage } from "../utils/apiFetch";
 import Layout from "../components/Layout";
 import { S, Avatar, Button, Drawer, Metric, PageHeader, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
@@ -98,7 +98,9 @@ function DetailPanel({ client, onClose, onEdit }) {
 
 export default function Clients({ currentPage, onNavigate }) {
   const [clients, setClients] = useState([]);
-  const [filtered, setFiltered] = useState([]);
+  const [summary, setSummary] = useState({ total: 0, active: 0, inactive: 0 });
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -107,39 +109,60 @@ export default function Clients({ currentPage, onNavigate }) {
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 9;
 
-  async function fetchClients() {
+  const fetchClients = useCallback(async (signal) => {
     setLoading(true); setError(null);
     try {
-      const res = await apiFetch("/clients");
+      const params = new URLSearchParams({
+        page: String(page - 1),
+        size: String(PAGE_SIZE),
+        search: search.trim(),
+      });
+      const res = await apiFetch(`/clients/page?${params}`, { signal });
       if (!res?.ok) throw new Error("Error al cargar clientes.");
-      setClients(await res.json());
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
-  }
+      const data = await res.json();
+      setClients(data.content ?? []);
+      setTotalElements(data.totalElements ?? 0);
+      setTotalPages(Math.max(1, data.totalPages ?? 1));
+    } catch (err) {
+      if (err.name !== "AbortError") setError(err.message);
+    }
+    finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }, [page, search]);
 
-  useEffect(() => { fetchClients(); }, []);
+  const fetchSummary = useCallback(async () => {
+    const res = await apiFetch("/clients/summary");
+    if (res?.ok) setSummary(await res.json());
+  }, []);
+
   useEffect(() => {
-    const q = search.toLowerCase();
-    setFiltered(q ? clients.filter((c) => c.name?.toLowerCase().includes(q)) : clients);
-    setPage(1);
-  }, [search, clients]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const activeCount = clients.filter((c) => c.active).length;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => fetchClients(controller.signal), 250);
+    return () => { window.clearTimeout(timeoutId); controller.abort(); };
+  }, [fetchClients]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(fetchSummary, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [fetchSummary]);
 
   function handleSave(saved, isEdit) {
-    setClients((prev) => isEdit ? prev.map((c) => c.id === saved.id ? saved : c) : [...prev, saved]);
     if (detail?.id === saved.id) setDetail(saved);
     setModal(null);
+    fetchSummary();
+    if (!isEdit && page !== 1) setPage(1);
+    else fetchClients();
   }
 
   async function handleDelete(id) {
     if (!window.confirm("¿Eliminar este cliente?")) return;
     try {
-      await apiFetch(`/clients/${id}`, { method: "DELETE" });
-      setClients((prev) => prev.filter((c) => c.id !== id));
+      const res = await apiFetch(`/clients/${id}`, { method: "DELETE" });
+      if (!res?.ok) throw new Error("Error al eliminar el cliente.");
       if (detail?.id === id) setDetail(null);
+      fetchSummary();
+      if (clients.length === 1 && page > 1) setPage((current) => current - 1);
+      else fetchClients();
     } catch (err) { alert(err.message); }
   }
 
@@ -148,22 +171,23 @@ export default function Clients({ currentPage, onNavigate }) {
       const res = await apiFetch(`/clients/${id}/status?active=${active}`, { method: "PATCH" });
       if (!res?.ok) return;
       const updated = await res.json();
-      setClients((prev) => prev.map((c) => c.id === id ? updated : c));
       if (detail?.id === id) setDetail(updated);
+      fetchSummary();
+      fetchClients();
     } catch (err) { alert(err.message); }
   }
 
   const kpis = [
-    { label: "Total", value: clients.length, icon: "ti-users", bg: "#E8EFFF", color: "#172033" },
-    { label: "Activos", value: activeCount, icon: "ti-user-check", bg: "#E1F5EE", color: "#0F6E56" },
-    { label: "Inactivos", value: clients.length - activeCount, icon: "ti-user-off", bg: "#F4F6F9", color: "#64748B" },
-    { label: "% Activos", value: clients.length ? Math.round((activeCount / clients.length) * 100) + "%" : "—", icon: "ti-chart-pie", bg: "#FAEEDA", color: "#854F0B" },
+    { label: "Total", value: summary.total, icon: "ti-users", bg: "#E8EFFF", color: "#172033" },
+    { label: "Activos", value: summary.active, icon: "ti-user-check", bg: "#E1F5EE", color: "#0F6E56" },
+    { label: "Inactivos", value: summary.inactive, icon: "ti-user-off", bg: "#F4F6F9", color: "#64748B" },
+    { label: "% Activos", value: summary.total ? Math.round((summary.active / summary.total) * 100) + "%" : "—", icon: "ti-chart-pie", bg: "#FAEEDA", color: "#854F0B" },
   ];
 
   return (
-    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar cliente..." searchValue={search} onSearch={setSearch}>
+    <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar cliente..." searchValue={search} onSearch={(value) => { setSearch(value); setPage(1); }}>
       <div className="page-stack">
-        <PageHeader eyebrow="Relaciones" title="Clientes" description="Contactos, estado comercial y contexto de cada cuenta." actions={<Button icon="ti-user-plus" onClick={() => setModal("create")}>Nuevo cliente</Button>} meta={loading ? "Cargando" : `${clients.length} registros`} />
+        <PageHeader eyebrow="Relaciones" title="Clientes" description="Contactos, estado comercial y contexto de cada cuenta." actions={<Button icon="ti-user-plus" onClick={() => setModal("create")}>Nuevo cliente</Button>} meta={loading ? "Cargando" : `${totalElements} registros`} />
 
         <div className="page-metric-strip">
           {kpis.map((k) => (
@@ -185,11 +209,11 @@ export default function Clients({ currentPage, onNavigate }) {
               </thead>
               <tbody>
                 {loading ? <SkeletonRows cols={7} rows={6} /> :
-                  paginated.length === 0 ? (
+                  clients.length === 0 ? (
                     <tr><td colSpan={7} style={{ ...S.td, textAlign: "center", color: "#64748B", padding: "40px" }}>
                       {search ? "Sin resultados." : "No hay clientes aún."}
                     </td></tr>
-                  ) : paginated.map((client) => (
+                  ) : clients.map((client) => (
                     <tr key={client.id} style={{ cursor: "pointer" }}
                       onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
                       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
@@ -236,7 +260,7 @@ export default function Clients({ currentPage, onNavigate }) {
             </table>
           </div>
           <div className="table-footer">
-            <span style={{ fontSize: "12px", color: "#64748B" }}>{loading ? "Cargando..." : `${filtered.length} clientes`}</span>
+            <span style={{ fontSize: "12px", color: "#64748B" }}>{loading ? "Cargando..." : `${totalElements} clientes`}</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>

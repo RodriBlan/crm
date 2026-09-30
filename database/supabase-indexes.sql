@@ -18,6 +18,9 @@ CREATE INDEX IF NOT EXISTS idx_client_phone
 CREATE INDEX IF NOT EXISTS idx_client_name
     ON public.client (name);
 
+CREATE INDEX IF NOT EXISTS idx_client_name_trgm
+    ON public.client USING gin (LOWER(name) gin_trgm_ops);
+
 -- Categorias.
 CREATE INDEX IF NOT EXISTS idx_category_description
     ON public.category (description);
@@ -42,6 +45,9 @@ CREATE INDEX IF NOT EXISTS idx_sales_client_date_desc
 
 CREATE INDEX IF NOT EXISTS idx_sales_date_desc
     ON public.sales (date DESC);
+
+CREATE INDEX IF NOT EXISTS idx_sales_status_date_desc
+    ON public.sales (status, date DESC);
 
 CREATE INDEX IF NOT EXISTS idx_sales_completed_date_client
     ON public.sales (date DESC, client_id)

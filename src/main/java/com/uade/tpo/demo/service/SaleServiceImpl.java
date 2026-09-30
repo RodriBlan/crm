@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ import com.uade.tpo.demo.entity.SaleStatus;
 import com.uade.tpo.demo.entity.dto.SaleItemRequest;
 import com.uade.tpo.demo.entity.dto.SaleRequest;
 import com.uade.tpo.demo.entity.dto.SaleResponse;
+import com.uade.tpo.demo.entity.dto.SaleSummaryResponse;
 import com.uade.tpo.demo.mapper.SaleMapper;
 import com.uade.tpo.demo.repository.ClientRepository;
 import com.uade.tpo.demo.repository.ProductRepository;
@@ -160,6 +163,21 @@ public class SaleServiceImpl implements SaleService {
         Sale sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + saleId));
         return saleMapper.toResponse(sale);
+    }
+
+    @Override
+    @Cacheable(cacheNames = "sales", key = "'page:' + #search + ':' + #status + ':' + #pageable", sync = true)
+    public Page<SaleResponse> getSalesPage(String search, SaleStatus status, Pageable pageable) {
+        return saleRepository.searchPage(search, status, pageable).map(saleMapper::toListResponse);
+    }
+
+    @Override
+    @Cacheable(cacheNames = "sales", key = "'summary'", sync = true)
+    public SaleSummaryResponse getSummary() {
+        return new SaleSummaryResponse(
+                saleRepository.getTotalRevenue(),
+                saleRepository.countByStatus(SaleStatus.PENDING)
+        );
     }
 
     // ─────────────── UPDATE STATUS ───────────────

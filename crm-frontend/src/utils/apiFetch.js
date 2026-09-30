@@ -68,16 +68,65 @@ function requireLogin() {
   window.dispatchEvent(new CustomEvent("auth-required"));
 }
 
+function pagedDemoResponse(items, params) {
+  const page = Math.max(0, Number(params.get("page")) || 0);
+  const size = Math.max(1, Number(params.get("size")) || 9);
+  const start = page * size;
+  const content = items.slice(start, start + size);
+  return jsonResponse({
+    content,
+    number: page,
+    size,
+    totalElements: items.length,
+    totalPages: Math.max(1, Math.ceil(items.length / size)),
+    numberOfElements: content.length,
+    first: page === 0,
+    last: start + size >= items.length,
+    empty: content.length === 0,
+  });
+}
+
 function demoResponse(path) {
-  if (path === "/clients") return jsonResponse(demoClients);
-  if (path === "/categories") return jsonResponse(demoCategories);
-  if (path === "/products") return jsonResponse({ content: demoProducts });
-  if (path === "/sales") return jsonResponse(demoSales);
-  if (path.startsWith("/sales/client/")) {
-    const clientId = Number(path.split("/").pop());
+  const [pathname, queryString = ""] = path.split("?");
+  const params = new URLSearchParams(queryString);
+
+  if (pathname === "/clients") return jsonResponse(demoClients);
+  if (pathname === "/clients/page") {
+    const search = (params.get("search") || "").toLowerCase();
+    const clients = demoClients.filter((client) => !search || client.name.toLowerCase().includes(search));
+    return pagedDemoResponse(clients, params);
+  }
+  if (pathname === "/clients/summary") {
+    const active = demoClients.filter((client) => client.active).length;
+    return jsonResponse({ total: demoClients.length, active, inactive: demoClients.length - active });
+  }
+  if (pathname === "/categories") return jsonResponse(demoCategories);
+  if (pathname === "/products") return jsonResponse({ content: demoProducts });
+  if (pathname === "/sales") return jsonResponse(demoSales);
+  if (pathname === "/sales/page") {
+    const search = (params.get("search") || "").toLowerCase();
+    const status = params.get("status");
+    const sales = demoSales.filter((sale) =>
+      (!search || sale.clientName.toLowerCase().includes(search)) && (!status || sale.status === status)
+    );
+    return pagedDemoResponse(sales, params);
+  }
+  if (pathname === "/sales/summary") {
+    return jsonResponse({
+      totalVolume: demoSales.filter((sale) => sale.status === "COMPLETED").reduce((sum, sale) => sum + sale.total, 0),
+      pending: demoSales.filter((sale) => sale.status === "PENDING").length,
+    });
+  }
+  if (/^\/sales\/\d+$/.test(pathname)) {
+    const saleId = Number(pathname.split("/").pop());
+    const sale = demoSales.find((item) => item.id === saleId);
+    return sale ? jsonResponse(sale) : jsonResponse({ message: "Venta no encontrada." }, 404);
+  }
+  if (pathname.startsWith("/sales/client/")) {
+    const clientId = Number(pathname.split("/").pop());
     return jsonResponse(demoSales.filter((sale) => sale.clientId === clientId));
   }
-  if (path === "/stats") {
+  if (pathname === "/stats") {
     return jsonResponse({
       totalSales: demoSales.length,
       totalRevenue: 21400,

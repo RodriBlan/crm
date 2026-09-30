@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.uade.tpo.demo.entity.dto.ClientRequest;
 import com.uade.tpo.demo.entity.dto.ClientResponse;
+import com.uade.tpo.demo.entity.dto.ClientSummaryResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ClientService {
 
@@ -22,4 +25,8 @@ public interface ClientService {
     List<ClientResponse> getAllClients();
 
     List<ClientResponse> getActiveClients();
+
+    Page<ClientResponse> getClientsPage(String search, Pageable pageable);
+
+    ClientSummaryResponse getSummary();
 }

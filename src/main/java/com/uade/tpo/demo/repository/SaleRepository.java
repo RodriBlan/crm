@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,6 +12,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.uade.tpo.demo.entity.Sale;
+import com.uade.tpo.demo.entity.SaleStatus;
+import org.springframework.data.repository.query.Param;
 
 @Repository
 public interface SaleRepository extends JpaRepository<Sale, Long> {
@@ -26,6 +29,16 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
     // Historial de compras de un cliente
     @EntityGraph(attributePaths = {"client", "items", "items.product"})
     List<Sale> findByClientIdOrderByDateDesc(Long clientId);
+
+    @EntityGraph(attributePaths = "client")
+    @Query("SELECT s FROM Sale s WHERE " +
+            "(:search = '' OR LOWER(s.client.name) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:status IS NULL OR s.status = :status)")
+    Page<Sale> searchPage(@Param("search") String search,
+                          @Param("status") SaleStatus status,
+                          Pageable pageable);
+
+    long countByStatus(SaleStatus status);
 
     // Ventas en un rango de fechas
     List<Sale> findByDateBetween(LocalDateTime from, LocalDateTime to);
