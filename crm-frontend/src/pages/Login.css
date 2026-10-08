@@ -26,12 +26,13 @@
   text-align: center;
 }
 
-.printvar-login__logo {
+.printvar-login__brand {
   display: block;
-  width: 145px;
-  max-width: 100%;
-  height: auto;
-  margin: -16px auto -19px;
+  margin-bottom: 17px;
+  color: #24518b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 .printvar-login__heading h1 {
@@ -292,12 +293,6 @@
 
   .printvar-login__panel {
     padding: 29px 24px 26px;
-  }
-
-  .printvar-login__logo {
-    width: 128px;
-    margin-top: -14px;
-    margin-bottom: -17px;
   }
 
   .printvar-login__heading h1 {

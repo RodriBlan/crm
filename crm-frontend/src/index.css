@@ -1234,6 +1234,7 @@ body {
   color: var(--yc-text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
 }
 
 button,
@@ -1244,6 +1245,8 @@ textarea {
 }
 
 button {
+  font-family: "DM Sans", "Manrope", sans-serif;
+  font-weight: 600;
   transition: transform 140ms var(--yc-ease-out), filter 160ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease, opacity 160ms ease;
 }
 
@@ -1529,7 +1532,7 @@ button:disabled {
   border-radius: 4px;
   color: #8491a4;
   background: #ffffff;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 9px;
   line-height: 1.4;
 }
@@ -1676,7 +1679,7 @@ button:disabled {
 .metric-card-value {
   margin-top: 5px;
   color: var(--yc-ink);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 27px;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -1806,7 +1809,7 @@ button:disabled {
   display: block;
   margin-top: 3px;
   color: var(--yc-ink);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 17px;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -1840,7 +1843,7 @@ button:disabled {
 
 .page-inline-metric > div:last-child {
   margin-top: 3px !important;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 16px !important;
   font-variant-numeric: tabular-nums;
   font-weight: 600 !important;
@@ -1868,7 +1871,12 @@ button:disabled {
 
 .app-content td[style*="font-family: monospace"],
 .app-content td[style*="fontFamily: monospace"] {
-  font-family: "IBM Plex Mono", monospace !important;
+  font-family: "DM Sans", "Manrope", sans-serif !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.app-content input[style*="font-family: monospace"] {
+  font-family: "DM Sans", "Manrope", sans-serif !important;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2842,7 +2850,7 @@ select:focus {
 
 .detail-total {
   color: var(--yc-ink);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 1.25rem;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
@@ -2910,7 +2918,7 @@ select:focus {
 
 .detail-item b {
   flex: 0 0 auto;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -3087,15 +3095,6 @@ select:focus {
   padding: 0 18px;
 }
 
-.sidebar-brand-logo {
-  width: 100%;
-  height: 58px;
-  object-fit: cover;
-  object-position: center 40%;
-  border-radius: 6px;
-  background: #ffffff;
-}
-
 .sidebar-brand-mark {
   width: 34px;
   height: 34px;
@@ -3105,7 +3104,7 @@ select:focus {
 }
 
 .sidebar-brand-copy strong {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 750;
 }
 
@@ -3310,8 +3309,8 @@ select:focus {
   gap: 7px;
   border: 1px solid transparent;
   border-radius: var(--yc-radius-control);
-  font-size: 11px;
-  font-weight: 750;
+  font-size: 12px;
+  font-weight: 650;
   white-space: nowrap;
   cursor: pointer;
   transition: transform 120ms var(--yc-ease-out), background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
@@ -3437,7 +3436,7 @@ select:focus {
 .ui-metric-copy strong {
   margin-top: 3px;
   color: var(--yc-ink);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 17px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
@@ -3545,7 +3544,7 @@ select:focus {
 
 .money-cell {
   color: var(--yc-ink) !important;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -3570,7 +3569,7 @@ select:focus {
   border-radius: 6px;
   color: var(--yc-accent);
   background: var(--yc-accent-soft);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 9px;
   font-weight: 700;
 }
@@ -3662,7 +3661,7 @@ select:focus {
 
 .dashboard-primary-metric > strong {
   margin: 22px 0;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 34px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
@@ -3739,7 +3738,7 @@ select:focus {
 .dashboard-summary-metric strong {
   margin: 4px 0 2px;
   color: var(--yc-ink);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "DM Sans", "Manrope", sans-serif;
   font-size: 17px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;

@@ -22,7 +22,10 @@ export default function Sidebar({ currentPage, onNavigate }) {
   return (
     <nav className="app-sidebar" aria-label="Navegación principal">
       <div className="sidebar-brand">
-        <img className="sidebar-brand-logo" src="/printvar-logo.png" alt="PrintVar, Codificadoras Inkjet" />
+        <div className="sidebar-brand-copy">
+          <strong>YourClients</strong>
+          <span>CRM</span>
+        </div>
       </div>
 
       <div className="sidebar-nav">

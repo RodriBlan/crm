@@ -64,7 +64,7 @@ export default function Login({ onViewDemo }) {
     <main className="printvar-login">
       <section className="printvar-login__panel" aria-labelledby="printvar-login-title">
         <header className="printvar-login__header">
-          <img className="printvar-login__logo" src="/printvar-logo.png" alt="PrintVar, Codificadoras Inkjet" />
+          <span className="printvar-login__brand">YourClients</span>
           <div className="printvar-login__heading">
             <h1 id="printvar-login-title">{mode === "login" ? "Ingresá a tu cuenta" : "Solicitá acceso"}</h1>
             <p>{mode === "login" ? "Accedé al sistema de gestión de PrintVar." : "Creá tu usuario. Un administrador aprobará tu solicitud."}</p>
