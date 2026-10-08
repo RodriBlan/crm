@@ -174,7 +174,7 @@ export default function Clients({ currentPage, onNavigate }) {
   return (
     <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar cliente..." searchValue={search} onSearch={(value) => { setSearch(value); setPage(1); }}>
       <div className="page-stack">
-        <PageHeader eyebrow="Relaciones" title="Clientes" description="Contactos, estado comercial y contexto de cada cuenta." actions={<Button icon="ti-user-plus" onClick={() => setModal("create")}>Nuevo cliente</Button>} meta={loading ? "Cargando" : `${totalElements} registros`} />
+        <PageHeader eyebrow="Relaciones" title="Clientes" description="Contactos, estado comercial y contexto de cada cuenta." actions={<Button icon="ti-plus" onClick={() => setModal("create")}>Nuevo cliente</Button>} meta={loading ? "Cargando" : `${totalElements} registros`} />
 
         <div className="page-metric-strip">
           {kpis.map((k) => (

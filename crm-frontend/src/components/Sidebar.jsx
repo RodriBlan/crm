@@ -2,12 +2,12 @@ import { useAuth } from "../hooks/useAuth";
 import Icon from "./Icon";
 
 const NAV = [
-  { icon: "home", label: "Resumen", page: "dashboard", section: "Operación" },
-  { icon: "user", label: "Clientes", page: "clients", section: "Operación" },
-  { icon: "package", label: "Productos", page: "products", section: "Operación" },
-  { icon: "credit-card", label: "Ventas", page: "sales", section: "Comercial" },
-  { icon: "clock", label: "Historial", page: "history", section: "Comercial" },
-  { icon: "user-shield", label: "Usuarios", page: "users", section: "Administración", adminOnly: true },
+  { icon: "home", label: "Resumen", page: "dashboard" },
+  { icon: "user", label: "Clientes", page: "clients" },
+  { icon: "package", label: "Productos", page: "products" },
+  { icon: "credit-card", label: "Ventas", page: "sales" },
+  { icon: "clock", label: "Historial", page: "history" },
+  { icon: "user-shield", label: "Usuarios", page: "users", adminOnly: true },
 ];
 
 export default function Sidebar({ currentPage, onNavigate }) {
@@ -22,29 +22,18 @@ export default function Sidebar({ currentPage, onNavigate }) {
   return (
     <nav className="app-sidebar" aria-label="Navegación principal">
       <div className="sidebar-brand">
-        <div className="sidebar-brand-mark" aria-hidden="true">
-          <Icon name="address-book" size={20} />
-        </div>
-        <div className="sidebar-brand-copy">
-          <strong>YourClients</strong>
-          <span>{isAuthenticated ? "Workspace comercial" : "Vista de demostración"}</span>
-        </div>
+        <img className="sidebar-brand-logo" src="/printvar-logo.png" alt="PrintVar, Codificadoras Inkjet" />
       </div>
 
       <div className="sidebar-nav">
-        {[...new Set(visibleNav.map((item) => item.section))].map((section) => (
-          <section className="sidebar-nav-section" key={section} aria-label={section}>
-            <div className="sidebar-section">{section}</div>
-            {visibleNav.filter((item) => item.section === section).map((item) => {
-              const active = currentPage === item.page;
-              return (
-                <button className={`sidebar-link${active ? " is-active" : ""}`} key={item.page} onClick={() => onNavigate(item.page)} aria-current={active ? "page" : undefined}>
-                  <Icon name={item.icon} size={18} /><span>{item.label}</span>
-                </button>
-              );
-            })}
-          </section>
-        ))}
+        {visibleNav.map((item) => {
+          const active = currentPage === item.page;
+          return (
+            <button className={`sidebar-link${active ? " is-active" : ""}`} key={item.page} onClick={() => onNavigate(item.page)} aria-current={active ? "page" : undefined}>
+              <Icon name={item.icon} size={18} /><span>{item.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="sidebar-footer">
