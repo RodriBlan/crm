@@ -1,0 +1,314 @@
+.printvar-login {
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 20px;
+  background: #fff;
+  color: #0a2453;
+}
+
+.printvar-login__panel {
+  position: relative;
+  width: min(100%, 456px);
+  padding: 39px 42px 32px;
+  border: 1px solid #e4ebf4;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(20, 72, 138, 0.1);
+}
+
+.printvar-login__header {
+  margin-bottom: 29px;
+  text-align: center;
+}
+
+.printvar-login__logo {
+  display: block;
+  width: 145px;
+  max-width: 100%;
+  height: auto;
+  margin: -16px auto -19px;
+}
+
+.printvar-login__heading h1 {
+  margin: 0;
+  color: #09285b;
+  font-size: 30px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.printvar-login__heading p {
+  margin: 8px 0 0;
+  color: #61758d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.printvar-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.printvar-login__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.printvar-login__field label {
+  color: #19355e;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.printvar-login__field input {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
+  border: 1px solid #cbd9e8;
+  border-radius: 6px;
+  background: #fff;
+  color: #0a2453;
+  font-size: 14px;
+  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.printvar-login__field input::placeholder {
+  color: #8798ae !important;
+}
+
+.printvar-login__field input:focus-visible {
+  border-color: #0d5ad3 !important;
+  box-shadow: 0 0 0 3px rgba(13, 90, 211, 0.13) !important;
+}
+
+.printvar-login__field small {
+  color: #687b96;
+  font-size: 12px;
+}
+
+.printvar-login__password-wrap {
+  position: relative;
+}
+
+.printvar-login__password-wrap input {
+  padding-right: 48px;
+}
+
+.printvar-login__reveal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #647996;
+  cursor: pointer;
+}
+
+.printvar-login__reveal[aria-pressed="true"] {
+  color: #0d5ad3;
+}
+
+.printvar-login__submit {
+  width: 100%;
+  min-height: 51px;
+  margin-top: 6px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid #0968e8;
+  border-radius: 6px;
+  background: #0968e8;
+  color: #fff;
+  box-shadow: 0 7px 16px rgba(9, 104, 232, 0.18);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background-color 150ms ease-out, transform 150ms ease-out;
+}
+
+.printvar-login__submit:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.printvar-login__submit .app-icon,
+.printvar-login__notice .app-icon {
+  color: currentColor !important;
+}
+
+.printvar-login__submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.printvar-login__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: printvar-spin 750ms linear infinite;
+}
+
+@keyframes printvar-spin {
+  to { transform: rotate(360deg); }
+}
+
+.printvar-login__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.printvar-login__notice svg {
+  flex: none;
+}
+
+.printvar-login__notice--error {
+  background: #fff1f1;
+  color: #9a2635;
+}
+
+.printvar-login__notice--success {
+  background: #eaf6f0;
+  color: #176447;
+}
+
+.printvar-login__notice--info {
+  background: #edf4ff;
+  color: #24518b;
+}
+
+.printvar-login__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 17px;
+  margin-top: 24px;
+  text-align: center;
+}
+
+.printvar-login__actions p {
+  margin: 0;
+  color: #61758f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.printvar-login__actions button,
+.printvar-login__footer a {
+  border: 0;
+  background: transparent;
+  color: #0968e8;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.printvar-login__actions button:hover,
+.printvar-login__footer a:hover {
+  text-decoration: underline;
+}
+
+.printvar-login__actions .printvar-login__demo,
+.printvar-login__actions .printvar-login__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.printvar-login__actions .printvar-login__demo {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #c8def8;
+  border-radius: 6px;
+  background: #f5faff;
+  color: #1762ba;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out, transform 150ms ease-out;
+}
+
+.printvar-login__actions .printvar-login__demo:active {
+  transform: scale(0.98);
+}
+
+.printvar-login__footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #8a9bb0;
+  font-size: 11px;
+}
+
+.printvar-login__footer a {
+  color: #526b8d;
+  font-weight: 500;
+}
+
+.printvar-login :is(button, a):focus-visible {
+  outline: 3px solid rgba(13, 90, 211, 0.4);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .printvar-login__submit:hover:not(:disabled) {
+    background: #075bcf;
+  }
+
+  .printvar-login__actions .printvar-login__demo:hover {
+    background: #eaf4ff;
+    border-color: #9ac5f2;
+    text-decoration: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .printvar-login {
+    justify-content: center;
+    padding: 20px 18px;
+    background: #fff;
+  }
+
+  .printvar-login__panel {
+    padding: 29px 24px 26px;
+  }
+
+  .printvar-login__logo {
+    width: 128px;
+    margin-top: -14px;
+    margin-bottom: -17px;
+  }
+
+  .printvar-login__heading h1 {
+    font-size: 27px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .printvar-login__submit,
+  .printvar-login__field input,
+  .printvar-login__actions .printvar-login__demo {
+    transition: none;
+  }
+}

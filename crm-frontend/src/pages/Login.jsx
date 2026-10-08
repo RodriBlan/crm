@@ -1,52 +1,31 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../hooks/useAuth";
 import Icon from "../components/Icon";
+import { useAuth } from "../hooks/useAuth";
+import "./Login.css";
 
-const inputFields = [
-  {
-    label: "Usuario",
-    name: "username",
-    type: "text",
-    placeholder: "Tu usuario",
-    icon: "ti-user",
-    autoComplete: "username",
-  },
-  {
-    label: "Contraseña",
-    name: "password",
-    type: "password",
-    placeholder: "Tu contraseña",
-    icon: "ti-lock",
-    autoComplete: "current-password",
-  },
-];
-
-const supportEmail = "rodrigoblanco1000@gmail.com";
 const MIN_PASSWORD_LENGTH = 6;
+const supportEmail = "rodrigoblanco1000@gmail.com";
 
 export default function Login({ onViewDemo }) {
   const { login, requestAccess } = useAuth();
   const [form, setForm] = useState({ username: "", password: "" });
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [mode, setMode] = useState("login");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [slowServer, setSlowServer] = useState(false);
-  const [mode, setMode] = useState("login");
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   useEffect(() => {
-    if (!loading) {
-      setSlowServer(false);
-      return undefined;
-    }
-
+    if (!loading) return undefined;
     const timeoutId = window.setTimeout(() => setSlowServer(true), 6000);
     return () => window.clearTimeout(timeoutId);
   }, [loading]);
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (!form.username || !form.password) {
-      setError("Completá usuario y contraseña.");
+    if (!form.username.trim() || !form.password) {
+      setError("Completá tu usuario y contraseña.");
       return;
     }
     if (form.password.length < MIN_PASSWORD_LENGTH) {
@@ -61,128 +40,105 @@ export default function Login({ onViewDemo }) {
 
     try {
       if (mode === "request") {
-        await requestAccess(form.username, form.password);
-        setSuccess("Solicitud enviada. Un administrador debe aprobar la cuenta antes del primer ingreso.");
+        await requestAccess(form.username.trim(), form.password);
+        setSuccess("Solicitud enviada. Un administrador debe aprobar tu cuenta antes de que puedas ingresar.");
         setForm({ username: "", password: "" });
-        return;
+      } else {
+        await login(form.username.trim(), form.password);
       }
-      await login(form.username, form.password);
     } catch (requestError) {
-      setError(requestError.message);
+      setError(requestError.message || "No pudimos completar la solicitud. Intentá de nuevo.");
     } finally {
       setLoading(false);
     }
   }
 
-  function toggleMode() {
-    setMode((current) => current === "login" ? "request" : "login");
+  function switchMode(nextMode) {
+    setMode(nextMode);
     setError(null);
     setSuccess(null);
+    setShowPassword(false);
   }
 
   return (
-    <main className="login-screen-professional">
-      <section className="login-auth-shell" aria-label="Acceso a YourClients">
-        <aside className="login-context">
-          <div className="login-context-brand">
-            <span aria-hidden="true"><Icon name="address-book" size={22} /></span>
-            <div>
-              <strong>YourClients</strong>
-              <small>Gestión comercial</small>
-            </div>
+    <main className="printvar-login">
+      <section className="printvar-login__panel" aria-labelledby="printvar-login-title">
+        <header className="printvar-login__header">
+          <img className="printvar-login__logo" src="/printvar-logo.png" alt="PrintVar, Codificadoras Inkjet" />
+          <div className="printvar-login__heading">
+            <h1 id="printvar-login-title">{mode === "login" ? "Ingresá a tu cuenta" : "Solicitá acceso"}</h1>
+            <p>{mode === "login" ? "Accedé al sistema de gestión de PrintVar." : "Creá tu usuario. Un administrador aprobará tu solicitud."}</p>
+          </div>
+        </header>
+
+        <form className="printvar-login__form" onSubmit={handleSubmit} noValidate>
+          {error && <div className="printvar-login__notice printvar-login__notice--error" role="alert"><Icon name="alert-circle" size={18} /><span>{error}</span></div>}
+          {success && <div className="printvar-login__notice printvar-login__notice--success" role="status"><Icon name="circle-check" size={18} /><span>{success}</span></div>}
+          {slowServer && !error && <div className="printvar-login__notice printvar-login__notice--info" role="status"><Icon name="clock" size={18} /><span>El servidor se está iniciando. Puede tardar unos segundos.</span></div>}
+
+          <div className="printvar-login__field">
+            <label htmlFor="printvar-username">Usuario</label>
+            <input
+              id="printvar-username"
+              name="username"
+              type="text"
+              value={form.username}
+              onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
+              placeholder="Tu usuario"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              required
+            />
           </div>
 
-          <div className="login-context-copy">
-            <p>Espacio de trabajo privado</p>
-            <h1>Tu operación comercial, en orden.</h1>
-            <span>Accedé a la información de clientes, productos y ventas desde un único lugar.</span>
-          </div>
-
-          <div className="login-context-status">
-            <span><Icon name="lock" size={15} /> Acceso autorizado</span>
-            <span><Icon name="database" size={15} /> Datos protegidos</span>
-          </div>
-        </aside>
-
-        <div className="login-form-panel">
-          <div className="login-form-heading">
-            <span>{mode === "login" ? "Acceso" : "Alta de usuario"}</span>
-            <h2>{mode === "login" ? "Iniciar sesión" : "Solicitar acceso"}</h2>
-            <p>
-              {mode === "login"
-                ? "Ingresá con las credenciales autorizadas para este espacio."
-                : "La cuenta quedará pendiente hasta que un administrador la apruebe."}
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="login-form">
-            {error && (
-              <div className="login-error" role="alert">
-                <Icon name="alert-circle" size={17} />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {success && (
-              <div className="login-success" role="status">
-                <Icon name="circle-check" size={17} />
-                <span>{success}</span>
-              </div>
-            )}
-
-            {slowServer && !error && (
-              <div className="login-status" role="status">
-                <Icon name="clock" size={17} />
-                <span>El servidor se está iniciando. El acceso puede tardar unos segundos.</span>
-              </div>
-            )}
-
-            {inputFields.map((field) => (
-              <label className="login-field" key={field.name}>
-                <span>{field.label}</span>
-                <div>
-                  <Icon name={field.icon} size={17} />
-                  <input
-                    type={field.type}
-                    name={field.name}
-                    value={form[field.name]}
-                    onChange={(event) => setForm((current) => ({ ...current, [field.name]: event.target.value }))}
-                    placeholder={field.placeholder}
-                    autoComplete={field.autoComplete}
-                    minLength={field.name === "password" ? MIN_PASSWORD_LENGTH : undefined}
-                  />
-                </div>
-              </label>
-            ))}
-
-            <button className="login-submit" type="submit" disabled={loading}>
-              {loading && <span className="login-spinner" aria-hidden="true" />}
-              {loading
-                ? (slowServer ? "Conectando..." : (mode === "login" ? "Ingresando..." : "Enviando..."))
-                : (mode === "login" ? "Ingresar" : "Enviar solicitud")}
-            </button>
-
-            <button className="login-mode-switch" type="button" onClick={toggleMode}>
-              {mode === "login" ? "Solicitar una cuenta" : "Volver al inicio de sesión"}
-            </button>
-
-            {mode === "login" && (
-              <button className="login-demo-link" type="button" onClick={onViewDemo}>
-                <Icon name="eye" size={17} />
-                Explorar demostración
+          <div className="printvar-login__field">
+            <label htmlFor="printvar-password">Contraseña</label>
+            <div className="printvar-login__password-wrap">
+              <input
+                id="printvar-password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={form.password}
+                onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
+                placeholder="Tu contraseña"
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                minLength={MIN_PASSWORD_LENGTH}
+                required
+              />
+              <button type="button" className="printvar-login__reveal" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"} aria-pressed={showPassword}>
+                <Icon name="eye" size={19} />
               </button>
-            )}
-          </form>
+            </div>
+            {mode === "request" && <small>Al menos {MIN_PASSWORD_LENGTH} caracteres.</small>}
+          </div>
 
-          <footer className="login-form-footer">
-            <span>Soporte: <a href={`mailto:${supportEmail}`}>{supportEmail}</a></span>
-            <nav aria-label="Información legal y de seguridad">
-              <a href="/privacy.html">Privacidad</a>
-              <a href="/security.html">Seguridad</a>
-            </nav>
-          </footer>
+          <button className="printvar-login__submit" type="submit" disabled={loading}>
+            {loading && <span className="printvar-login__spinner" aria-hidden="true" />}
+            <span>{loading ? (slowServer ? "Conectando..." : mode === "login" ? "Ingresando..." : "Enviando...") : mode === "login" ? "Ingresar" : "Enviar solicitud"}</span>
+            {!loading && <Icon name="arrow-right" size={18} />}
+          </button>
+        </form>
+
+        <div className="printvar-login__actions">
+          {mode === "login" ? (
+            <>
+              <p>¿Todavía no tenés una cuenta? <button type="button" onClick={() => switchMode("request")}>Solicitar acceso</button></p>
+              <button className="printvar-login__demo" type="button" onClick={onViewDemo}><Icon name="eye" size={17} /> Ver demostración</button>
+            </>
+          ) : (
+            <button className="printvar-login__back" type="button" onClick={() => switchMode("login")}><Icon name="arrow-left" size={17} /> Volver a iniciar sesión</button>
+          )}
         </div>
       </section>
+
+      <footer className="printvar-login__footer">
+        <a href={`mailto:${supportEmail}`}>Soporte</a>
+        <span aria-hidden="true">·</span>
+        <a href="/privacy.html">Privacidad</a>
+        <span aria-hidden="true">·</span>
+        <a href="/security.html">Seguridad</a>
+      </footer>
     </main>
   );
 }
