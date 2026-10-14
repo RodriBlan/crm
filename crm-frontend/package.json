@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "generate:welcome-map": "node scripts/generate-welcome-map.mjs",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
@@ -11,6 +12,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.104.0",
+    "motion": "^14.0.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
@@ -20,6 +22,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
+    "dotted-map": "^3.1.0",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",

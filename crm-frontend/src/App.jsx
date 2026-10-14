@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import Login from "./pages/Login";
+import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import Products from "./pages/Products";
@@ -20,7 +21,8 @@ const PAGES = {
 };
 
 const PATH_TO_PAGE = {
-  "": "dashboard",
+  "": "welcome",
+  login: "login",
   dashboard: "dashboard",
   clients: "clients",
   products: "products",
@@ -35,6 +37,18 @@ function getPathSegment(pathname) {
 
 function getPageFromPath(pathname) {
   return PATH_TO_PAGE[getPathSegment(pathname)] ?? null;
+}
+
+function subscribeToPath(onChange) {
+  window.addEventListener("popstate", onChange);
+  return () => window.removeEventListener("popstate", onChange);
+}
+
+const getPath = () => window.location.pathname;
+
+function navigate(path, replace = false) {
+  window.history[replace ? "replaceState" : "pushState"](null, "", path);
+  window.dispatchEvent(new PopStateEvent("popstate"));
 }
 
 function PreviewBanner({ onLogin }) {
@@ -69,14 +83,14 @@ function AuthRequiredDialog({ onClose, onLogin }) {
 
 function AppRouter() {
   const { isAuthenticated } = useAuth();
-  const [currentPage, setCurrentPage] = useState(() => getPageFromPath(window.location.pathname));
+  const pathname = useSyncExternalStore(subscribeToPath, getPath);
+  const currentPage = getPageFromPath(pathname);
   const [previewMode, setPreviewMode] = useState(false);
   const [showAuthRequired, setShowAuthRequired] = useState(false);
 
   useEffect(() => {
     const onPopState = () => {
-      setCurrentPage(getPageFromPath(window.location.pathname));
-      if (getPathSegment(window.location.pathname) === "login") {
+      if (["", "login"].includes(getPathSegment(window.location.pathname))) {
         setPreviewMode(false);
       }
     };
@@ -91,39 +105,40 @@ function AppRouter() {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && getPathSegment(window.location.pathname) === "login") {
-      window.history.replaceState(null, "", "/dashboard");
-      setCurrentPage("dashboard");
+    if (isAuthenticated && currentPage === "login") {
+      navigate("/dashboard", true);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, currentPage]);
 
   const handleNavigate = (page) => {
-    window.history.pushState(null, "", `/${page}`);
-    setCurrentPage(page);
+    navigate(`/${page}`);
   };
 
   const goToLogin = () => {
     setPreviewMode(false);
     setShowAuthRequired(false);
-    window.history.pushState(null, "", "/login");
-    setCurrentPage(null);
+    navigate("/login");
   };
 
   const startPreview = () => {
     setPreviewMode(true);
     setShowAuthRequired(false);
-    window.history.pushState(null, "", "/dashboard");
-    setCurrentPage("dashboard");
+    navigate("/dashboard");
     window.requestAnimationFrame(() => {
       document.getElementById("main-content")?.focus({ preventScroll: true });
     });
   };
 
+  if (currentPage === "welcome") {
+    return <Welcome onLogin={goToLogin} />;
+  }
+
   if (!isAuthenticated && !previewMode) {
     return <Login onViewDemo={startPreview} />;
   }
 
-  const PageComponent = currentPage && PAGES[currentPage] ? PAGES[currentPage] : NotFound;
+  const PageComponent = currentPage === "login" && isAuthenticated
+    ? Dashboard : PAGES[currentPage] ?? NotFound;
 
   return (
     <>
