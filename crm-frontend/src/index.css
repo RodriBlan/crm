@@ -3597,7 +3597,7 @@ select:focus {
 
 .history-client-picker {
   padding: 14px 16px;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .history-client-picker > div {

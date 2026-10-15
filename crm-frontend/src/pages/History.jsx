@@ -55,7 +55,6 @@ export default function History({ currentPage, onNavigate }) {
           <div style={{ width: "280px", position: "relative" }}>
             <div style={{ fontSize: "10px", fontWeight: "500", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Seleccionar Cliente</div>
             <div style={{ position: "relative", display: "flex", alignItems: "center", background: "#fff", border: "0.5px solid rgba(23,32,51,0.15)", borderRadius: "8px", padding: "8px 12px", gap: "8px" }}>
-              <Icon name="user-search" size={16} />
               <input type="text" value={clientSearch}
                 onChange={(e) => { setClientSearch(e.target.value); setShowDropdown(true); setSelectedClient(null); }}
                 onFocus={() => setShowDropdown(true)}
