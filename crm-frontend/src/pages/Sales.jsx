@@ -356,7 +356,11 @@ export default function Sales({ currentPage, onNavigate }) {
     <Layout currentPage={currentPage} onNavigate={onNavigate} searchPlaceholder="Buscar por cliente..." searchValue={search} onSearch={(value) => { setSearch(value); setPage(1); }}>
       <div className="page-stack">
         <PageHeader eyebrow="Operaciones" title="Ventas" description="Seguimiento de transacciones, importes y estados." actions={<Button icon="ti-plus" onClick={() => setModal(true)}>Nueva venta</Button>} meta={`${totalElements} resultados`} />
-        <div className="sales-summary-bar">
+        <section className="sales-summary-bar" aria-labelledby="sales-summary-title">
+          <div className="sales-summary-copy">
+            <h2 id="sales-summary-title">Resumen general</h2>
+            <p>Acumulado de todas las operaciones.</p>
+          </div>
           <div className="page-inline-metrics">
             {[
               { label: "Volumen total", value: fmtMoney(summary.totalVolume), color: "#172033" },
@@ -368,7 +372,7 @@ export default function Sales({ currentPage, onNavigate }) {
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
         <div className="filter-bar">
           <Icon name="filter" size={16} />
