@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiJson } from "../utils/apiFetch";
 import Layout from "../components/Layout";
-import { S, Button, PageHeader, SkeletonRows, Pagination, ErrorBanner, Modal, FormField } from "../components/ui";
+import { S, Button, PageHeader, SkeletonRows, Pagination, ErrorBanner, Modal, FormField, fmtMoney } from "../components/ui";
 import Icon from "../components/Icon";
 import { queryKeys } from "../lib/queryKeys";
 
@@ -239,7 +239,7 @@ export default function Products({ currentPage, onNavigate }) {
                           ? <span style={{ padding: "2px 8px", borderRadius: "20px", fontSize: "10px", fontWeight: "500", background: "#E8EFFF", color: "#172033" }}>{p.categoryDescription}</span>
                           : <span style={{ color: "#D5DCE6", fontSize: "12px" }}>—</span>}
                       </td>
-                      <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px" }}>${Number(p.price).toFixed(2)}</td>
+                      <td className="money-cell" style={S.td}>{fmtMoney(p.price)}</td>
                       <td style={S.td}><StockIndicator stock={p.stock} /></td>
                       <td style={{ ...S.td, fontSize: "12px", color: "#64748B" }}>{p.descuento > 0 ? `${p.descuento}%` : "—"}</td>
                       <td style={{ ...S.td, textAlign: "center" }}>
