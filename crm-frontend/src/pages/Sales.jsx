@@ -368,7 +368,7 @@ export default function Sales({ currentPage, onNavigate }) {
             ].map((k) => (
               <div className="page-inline-metric" key={k.label}>
                 <div style={{ fontSize: "10px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: "500" }}>{k.label}</div>
-                <div style={{ fontSize: "18px", fontWeight: "500", color: k.color, marginTop: "4px" }}>{k.value}</div>
+                <div style={{ fontSize: "18px", fontWeight: "700", color: k.color, marginTop: "4px", fontVariantNumeric: "tabular-nums" }}>{k.value}</div>
               </div>
             ))}
           </div>
@@ -406,15 +406,15 @@ export default function Sales({ currentPage, onNavigate }) {
                       onMouseEnter={(e) => e.currentTarget.style.background = "#F4F6F9"}
                       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                       onClick={() => openDetail(sale.id)}>
-                      <td style={{ ...S.td, fontFamily: "monospace", fontSize: "12px", color: "#64748B" }}>#{sale.id}</td>
-                      <td style={{ ...S.td, fontSize: "12px", color: "#64748B", whiteSpace: "nowrap" }}>{new Date(sale.date).toLocaleDateString("es-AR")}</td>
+                      <td style={{ ...S.td, fontSize: "12px", fontWeight: "650", color: "#64748B", fontVariantNumeric: "tabular-nums" }}>#{sale.id}</td>
+                      <td style={{ ...S.td, fontSize: "12px", fontWeight: "650", color: "#64748B", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>{new Date(sale.date).toLocaleDateString("es-AR")}</td>
                       <td style={S.td}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                           <Avatar name={sale.clientName} size={26} fontSize={9} />
                           <span style={{ fontSize: "13px", fontWeight: "500" }}>{sale.clientName}</span>
                         </div>
                       </td>
-                      <td style={{ ...S.td, textAlign: "right", fontFamily: "monospace", fontSize: "13px", fontWeight: "500" }}>{fmtMoney(sale.total)}</td>
+                      <td className="money-cell" style={{ ...S.td, textAlign: "right" }}>{fmtMoney(sale.total)}</td>
                       <td style={{ ...S.td, textAlign: "center" }}><StatusBadge status={sale.status} /></td>
                       <td style={{ ...S.td, textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
                         <div className="row-actions" style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "2px", opacity: 0, transition: "opacity 0.15s" }}>
@@ -448,7 +448,7 @@ export default function Sales({ currentPage, onNavigate }) {
             </table>
           </div>
           <div className="table-footer">
-            <span style={{ fontSize: "12px", color: "#64748B" }}>{totalElements} ventas</span>
+            <span style={{ fontSize: "12px", fontWeight: "650", color: "#64748B", fontVariantNumeric: "tabular-nums" }}>{totalElements} ventas</span>
             <Pagination page={page} totalPages={totalPages} onPage={setPage} />
           </div>
         </div>
