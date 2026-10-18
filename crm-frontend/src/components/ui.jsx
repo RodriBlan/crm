@@ -1,3 +1,6 @@
+/* eslint-disable react-refresh/only-export-components -- Shared UI module also exports design tokens and formatters. */
+import Icon from "./Icon";
+
 export const BLUE = {
   900: "#0F1B2D",
   800: "#172033",
@@ -155,4 +158,3 @@ export function Drawer({ title, subtitle, onClose, children, footer }) {
 export function FormField({ label, hint, required = false, children }) {
   return <label className="form-field"><span>{label}{required && <b aria-hidden="true"> *</b>}</span>{children}{hint && <small>{hint}</small>}</label>;
 }
-import Icon from "./Icon";

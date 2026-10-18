@@ -67,7 +67,7 @@ export default function Login({ onViewDemo }) {
           <span className="printvar-login__brand">YourClients</span>
           <div className="printvar-login__heading">
             <h1 id="printvar-login-title">{mode === "login" ? "Ingresá a tu cuenta" : "Solicitá acceso"}</h1>
-            <p>{mode === "login" ? "Accedé al sistema de gestión de PrintVar." : "Creá tu usuario. Un administrador aprobará tu solicitud."}</p>
+            <p>{mode === "login" ? "Accedé a tu espacio privado de gestión comercial." : "Creá tu usuario. Un administrador aprobará tu solicitud."}</p>
           </div>
         </header>
 
